@@ -121,7 +121,7 @@ class Broker:
         # Properly format payload with JSON-encoded jData
         payload = f"jData={json.dumps(jdata)}&jKey={self.session}"
         
-        logger.printD("Fetching positions with payload:"+ payload)
+        logger.printR("Fetching positions with payload:"+ payload)
 
         try:
             res = requests.post(url, headers=headers, data=payload)
@@ -165,4 +165,5 @@ class Broker:
             return False
         payoutdata = data.get("payout")
         
+
         return  payoutdata
