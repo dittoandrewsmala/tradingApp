@@ -30,7 +30,7 @@ class Broker:
         logger.printD("Opening authorization URL...")
         webbrowser.open(config.AUTH_URL)
 
-        request_code = input("Paste request_code from redirect URL: ").strip()
+        request_code = input("Paste request_code from redirect UddRL: ").strip()
 
         hash_string = config.API_KEY + request_code + config.API_SECRET
         security_key = hashlib.sha256(hash_string.encode()).hexdigest()
@@ -167,3 +167,4 @@ class Broker:
         
 
         return  payoutdata
+
