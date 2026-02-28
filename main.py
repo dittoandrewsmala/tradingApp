@@ -62,14 +62,17 @@ def on_tick(price):
         logger.printR("Order Number value: "+ str(ord_numer))
         if ord_numer is not None:
             isTradeActive = True
-    elif isTradeActive and ord_numer is not None:
-        if  checkTradeActive():
-            logger.printR("⚠️ Trade exited."+ str(ord_numer))
-            isTradeActive = False
-            ord_numer = None
+            while True:
+                time.sleep(config.WAIT_MARKETFEED_TIME)
+                if checkTradeActive():
+                    logger.printR("⚠️ Trade exited."+ str(ord_numer))
+                    isTradeActive = False
+                    ord_numer = None
+                    break
+
+            
 
 def checkTradeActive():
-    time.sleep(config.WAIT_MARKETFEED_TIME)
     current_Price=broker.get_max_payout()
     if current_Price > start_Price:
         strart_Price = current_Price
