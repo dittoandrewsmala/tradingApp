@@ -91,9 +91,10 @@ class Broker:
                 logger.printD("Client :"+ data["client"])
             else:
                 logger.printD("\n❌ Login Failed:"+ data.get("emsg"))
+                raise Exception("Login failed: " + data.get("emsg", "Unknown error"))
 
         except Exception as e:
-             logger.printR("Error:", str(e))
+             raise Exception("Login failed: " + str(e))
 
         self.session = data["token"]
         print("Session token set:"+ self.session)
