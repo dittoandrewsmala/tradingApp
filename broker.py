@@ -5,6 +5,18 @@ import webbrowser
 import json
 from logger import Logger
 import time
+import threading
+from flask import Flask, request
+
+
+logger = Logger()
+app = Flask(__name__)
+auth_data = {}
+
+def start_flask():
+        """Run Flask in background to receive request_code from redirect URL"""
+        app.run(host="0.0.0.0", port=8080)
+
 
 
 logger = Logger()
@@ -27,10 +39,20 @@ class Broker:
     
     def login(self):
 
-        logger.printD("Opening authorization URL...")
-        webbrowser.open(config.AUTH_URL)
+         # Start Flask in background thread
+        threading.Thread(target=start_flask, daemon=True).start()
 
-        request_code = input("Paste request_code from redirect UddRL: ").strip()
+        # Provide user with the authorization URL
+        logger.printD(f"Please open this URL in a browser to login: {config.AUTH_URL}")
+
+        # Wait for callback to receive request_code
+        logger.printD("Waiting for request_code from Flattrade callback...")
+        print("Waiting for request_code from Flattrade callback...",auth_data)
+        while "request_code" not in auth_data:
+            time.sleep(1)
+
+        request_code = auth_data["request_code"]
+        logger.printD(f"Received request_code: {request_code}")
 
         hash_string = config.API_KEY + request_code + config.API_SECRET
         security_key = hashlib.sha256(hash_string.encode()).hexdigest()
