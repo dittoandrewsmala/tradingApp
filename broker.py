@@ -8,14 +8,34 @@ import time
 import threading
 from flask import Flask, request
 
-
 logger = Logger()
+
 app = Flask(__name__)
+
+# Thread-safe storage
 auth_data = {}
+auth_event = threading.Event()
+
+
+# -------------------------------
+# CALLBACK ROUTE (CRITICAL FIX)
+# -------------------------------
+@app.route("/callback")
+def callback():
+    code = request.args.get("code")
+
+    if code:
+        auth_data["request_code"] = code
+        auth_event.set()  # notify waiting thread
+        logger.printD(f"Received request_code: {code}")
+        return "Authorization successful. You can close this window."
+
+    return "No code received", 400
+
 
 def start_flask():
-        """Run Flask in background to receive request_code from redirect URL"""
-        app.run(host="0.0.0.0", port=8080)
+    """Run Flask in background to receive request_code"""
+    app.run(host="0.0.0.0", port=8080)
 
 
 
@@ -39,19 +59,19 @@ class Broker:
     
     def login(self):
 
-         # Start Flask in background thread
-        threading.Thread(target=start_flask, daemon=True).start()
+        # Start Flask server in background
+        flask_thread = threading.Thread(target=start_flask, daemon=True)
+        flask_thread.start()
 
-        # Provide user with the authorization URL
-        logger.printD(f"Please open this URL in a browser to login: {config.AUTH_URL}")
-
-        # Wait for callback to receive request_code
+        logger.printD(f"Open this URL in browser to login:\n{config.AUTH_URL}")
         logger.printD("Waiting for request_code from Flattrade callback...")
-        print("Waiting for request_code from Flattrade callback...",auth_data)
-        while "request_code" not in auth_data:
-            time.sleep(1)
 
-        request_code = auth_data["request_code"]
+        # Wait for callback (max 120 seconds)
+        if not auth_event.wait(timeout=120):
+            raise TimeoutError("Did not receive request_code within 120 seconds")
+
+        request_code = auth_data.get("request_code")
+        
         logger.printD(f"Received request_code: {request_code}")
 
         hash_string = config.API_KEY + request_code + config.API_SECRET
