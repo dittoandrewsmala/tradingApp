@@ -27,7 +27,6 @@ def callback():
     if code:
         auth_data["request_code"] = code
         auth_event.set()  # notify waiting thread
-        logger.printD(f"Received request_code: {code}")
         return "Authorization successful. You can close this window."
 
     return "No code received", 400
@@ -53,10 +52,7 @@ class Broker:
     def __init__(self):
         self.session = None
 
-    def login1(self):
-        self.session = "53e20e326361ff89783c3ed00f0554a44fe2e454ba0b1d3eeeadf3fef4aa012b"
-        return True
-    
+        
     def login(self):
 
         # Start Flask server in background
@@ -71,8 +67,8 @@ class Broker:
             raise TimeoutError("Did not receive request_code within 120 seconds")
 
         request_code = auth_data.get("request_code")
+        print("Received request_code:", request_code)
         
-        logger.printD(f"Received request_code: {request_code}")
 
         hash_string = config.API_KEY + request_code + config.API_SECRET
         security_key = hashlib.sha256(hash_string.encode()).hexdigest()
@@ -86,8 +82,8 @@ class Broker:
             response = requests.post(config.TOKEN_URL, json=payload)
             data = response.json()
 
-            logger.printD("\n===== API RESPONSE =====")
-            logger.printD(data)
+            
+            print(data)
 
             if data.get("stat") == "Ok":
                 logger.printD("\n✅ Login Successful")
@@ -100,7 +96,7 @@ class Broker:
              logger.printR("Error:", str(e))
 
         self.session = data["token"]
-        logger.printR("Session token set:"+ self.session)
+        print("Session token set:"+ self.session)
         return True
     
     def get_nifty_token(self):
