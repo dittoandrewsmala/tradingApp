@@ -47,9 +47,8 @@ def on_tick(price):
     signal = strategy.signal(price)
     #isProfitable = position.get_positions(broker.session)
     
-    utc_time = datetime.utcnow().replace(tzinfo=pytz.utc)
-    ist_zone = pytz.timezone("Asia/Kolkata")
-    current_time = utc_time.astimezone(ist_zone)
+    ist = pytz.timezone("Asia/Kolkata")
+    current_time = datetime.now(ist).time()
     
     logger.printR("lot index: "+ str(lotIndex))
     
