@@ -57,8 +57,7 @@ def on_tick(price):
     
     print("signal: "+ str(signal))
     print("isTradeActive: "+ str(isTradeActive))
-    print("current time: "+ str(current_time >= time(9, 30)))
-    print("current time: "+ str(signal and not isTradeActive and current_time >= time(9, 30)))
+    print("current time: "+ str(current_time))
     
     if signal and not isTradeActive and current_time >= time(9, 30):
         input("Do want to continue ? ").strip()
