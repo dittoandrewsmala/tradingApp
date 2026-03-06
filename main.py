@@ -4,7 +4,7 @@ from risk_manager import RiskManager
 from trade_manager import TradeManager
 from websocket_feed import MarketFeed
 from Postion import Position 
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 from logger import Logger
 import config
 import sys
@@ -48,7 +48,7 @@ def on_tick(price):
     
     
     logger.printR("lot index: "+ str(lotIndex))
-    current_time = datetime.now().time()
+    current_time =  datetime.now(timezone.utc).astimezone().time()
     # 2:00 PM time object
     cutoff_time = time(config.CUT_OFF_TIME, 0)
 
