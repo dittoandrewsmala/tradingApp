@@ -115,13 +115,13 @@ class Broker:
             res = requests.post(url, headers=headers, data=payload)
         except Exception as e:
             logger.printR("❌ Request error while fetching positions:"+ str(e))
-            return False
+            raise Exception("Failed to fetch index list: " + str(e))
     
         try:
             data = res.json()
         except ValueError:
-            logger.printR("❌ Failed to decode JSON response:"+ res.text)
-            return False
+            raise Exception("Failed to decode JSON response: " + res.text)
+        
         token = next(item["token"] for item in data["values"] if item["idxname"] == "Nifty 50")
         return  token
 
@@ -165,13 +165,12 @@ class Broker:
         try:
             res = requests.post(url, headers=headers, data=payload)
         except Exception as e:
-            logger.printR("❌ Request error while fetching positions:"+ str(e))
-            return False
+            raise Exception("Failed to place order: " + str(e))
 
         try:
             data = res.json()
         except ValueError:
-            logger.printR("❌ Failed to decode JSON response:"+ res.text)
+            raise Exception("❌ Failed to decode JSON response:"+ res.text)
             return False
 
         logger.printD(data)
@@ -194,13 +193,12 @@ class Broker:
         try:
             res = requests.post(url, headers=headers, data=payload)
         except Exception as e:
-            logger.printR("❌ Request error while fetching positions:"+ str(e))
-            return False
+            raise Exception("Failed to fetch max payout: " + str(e))
     
         try:
             data = res.json()
         except ValueError:
-            logger.printR("❌ Failed to decode JSON response:"+ res.text)
+            raise Exception("❌ Failed to decode JSON response:"+ res.text)
             return False
         payoutdata = data.get("payout")
         

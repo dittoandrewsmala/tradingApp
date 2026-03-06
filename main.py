@@ -39,7 +39,7 @@ if not signalStarted:
 def on_tick(price):
     global signalStarted, lotIndex, isTradeActive ,ord_numer,start_Price,current_Price
     
-    logger.printR("LTP:"+ str(price))
+    #logger.printR("LTP:"+ str(price))
 
     ## receving signal 
     signal = strategy.signal(price)
@@ -54,7 +54,11 @@ def on_tick(price):
 
     if current_time > cutoff_time and lotIndex==0:
         sys.exit(0)
-
+    print("current time: "+ str(current_time))
+    print("cutoff time: "+ str(cutoff_time))
+    print("signal: "+ str(signal))
+    print("isTradeActive: "+ str(isTradeActive))
+    
     if signal and not isTradeActive and current_time >= time(9, 30):
         input("Do want to continue ? ").strip()
         print("index value: "+ str(lotIndex))
