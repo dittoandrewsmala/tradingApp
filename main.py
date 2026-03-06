@@ -8,6 +8,8 @@ from datetime import datetime, time, timezone
 from logger import Logger
 import config
 import sys
+import pytz
+
 
 logger = Logger()
 broker = Broker()
@@ -45,10 +47,12 @@ def on_tick(price):
     signal = strategy.signal(price)
     #isProfitable = position.get_positions(broker.session)
     
-    
+    utc_time = datetime.utcnow().replace(tzinfo=pytz.utc)
+    ist_zone = pytz.timezone("Asia/Kolkata")
+    current_time = utc_time.astimezone(ist_zone)
     
     logger.printR("lot index: "+ str(lotIndex))
-    current_time =  datetime.now(timezone.utc).astimezone().time()
+    
     # 2:00 PM time object
     cutoff_time = time(config.CUT_OFF_TIME, 0)
 
