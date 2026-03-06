@@ -54,10 +54,11 @@ def on_tick(price):
 
     if current_time > cutoff_time and lotIndex==0:
         sys.exit(0)
-    print("current time: "+ str(current_time))
-    print("cutoff time: "+ str(cutoff_time))
+    
     print("signal: "+ str(signal))
     print("isTradeActive: "+ str(isTradeActive))
+    print("current time: "+ str(current_time >= time(9, 30)))
+    print("current time: "+ str(signal and not isTradeActive and current_time >= time(9, 30)))
     
     if signal and not isTradeActive and current_time >= time(9, 30):
         input("Do want to continue ? ").strip()
