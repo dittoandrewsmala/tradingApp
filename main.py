@@ -35,6 +35,9 @@ if not signalStarted:
         logger.printD("🚀 Starting signal generation...")
         signalStarted = True
         start_Price=broker.get_max_payout()
+        choice = input("Do want to give index value ? ").strip()
+        if choice.lower() == "yes":
+            lotIndex = int(input("Enter lot index (0, 1, 2, ...): ").strip())
     ### end of max payout check
 
 
