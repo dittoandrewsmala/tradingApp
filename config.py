@@ -31,7 +31,7 @@ RISK_PERCENT = 1
 
 stop_target_counter=1
 
-CUT_OFF_TIME = 14
+CUT_OFF_TIME = 13
 
 # increse yime for stop loss and target hit check value incress to avoid mising target hit and stop loss hit
 WAIT_MARKETFEED_TIME = 30
