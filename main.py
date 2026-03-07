@@ -61,24 +61,20 @@ def on_tick(price):
     if current_time > cutoff_time and lotIndex==0:
         sys.exit(0)
     
-    print("signal: "+ str(signal))
-    print("isTradeActive: "+ str(isTradeActive))
-    print("current time: "+ str(current_time))
+    if checkTradeActive():
+        logger.printR("⚠️ Trade exited."+ str(ord_numer))
+        isTradeActive = False
+        ord_numer = None
+   
+    print("Flag Signal : "+ str(signal and not isTradeActive and current_time >= time(9, 30)))
     
     if signal and not isTradeActive and current_time >= time(9, 30):
         input("Do want to continue ? ").strip()
         print("index value: "+ str(lotIndex))
         ord_numer=trade.on_signal(signal, price,lotIndex)
-        logger.printR("Order Number value: "+ str(ord_numer))
         if ord_numer is not None:
             isTradeActive = True
-            while True:
-                time.sleep(config.WAIT_MARKETFEED_TIME)
-                if checkTradeActive():
-                    logger.printR("⚠️ Trade exited."+ str(ord_numer))
-                    isTradeActive = False
-                    ord_numer = None
-                    break
+            
 
             
 
@@ -86,17 +82,14 @@ def checkTradeActive():
     current_Price=broker.get_max_payout()
     if current_Price > start_Price:
         strart_Price = current_Price
-        logger.printR("✅ Profit: "+ str(current_Price))
         lotIndex=0
         return True
     elif current_Price < start_Price:
         strart_Price = current_Price
-        logger.printR("❌ Loss: "+ str(current_Price))
         lotIndex+=1
         return True
     else:
         strart_Price = current_Price
-        logger.printR("❌ No changes to: "+ str(current_Price))
         return False
             
        
