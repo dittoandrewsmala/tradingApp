@@ -81,15 +81,15 @@ def on_tick(price):
 def checkTradeActive():
     current_Price=broker.get_max_payout()
     if current_Price > start_Price:
-        strart_Price = current_Price
+        start_Price = current_Price
         lotIndex=0
         return True
     elif current_Price < start_Price:
-        strart_Price = current_Price
+        start_Price = current_Price
         lotIndex+=1
         return True
     else:
-        strart_Price = current_Price
+        start_Price = current_Price
         return False
             
        
