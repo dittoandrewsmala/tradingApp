@@ -167,7 +167,8 @@ class Broker:
         except Exception as e:
             print("❌ Request error while placing order:"+ str(e))
             raise Exception("Failed to place order: " + str(e))
-
+        print("Order placement response:"+ res.text)
+        input("Do want to continue ? ").strip()
         try:
             data = res.json()
         except ValueError:
