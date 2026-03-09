@@ -153,6 +153,7 @@ class Broker:
              "trantype": side,
              "prctyp": "MKT",
              "ret": "DAY",
+             "trailprc" :"0",
              "bpprc": str(target*config.stop_target_counter),
              "blprc": str(stop_loss*config.stop_target_counter)
         }
