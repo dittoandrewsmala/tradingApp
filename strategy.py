@@ -25,13 +25,14 @@ class Strategy:
     def signal(self, price):
 
         self.prices.append(price)
-        print("signal signalsignal :fefefe ")
+        print("self.prices: "+ str(self.prices))
+        print("self.prices length: "+ str(len(self.prices)))
         if len(self.prices) < config.MIN_CANDLES:
             return None
-        print("signal sstarts")
+        print("signal starts")
         df = pd.DataFrame(list(self.prices), columns=["price"])
 
-        # Indicators
+        # Indicators    
         ema9_series = df["price"].ewm(span=9, adjust=False).mean()
         ema21_series = df["price"].ewm(span=21, adjust=False).mean()
 
