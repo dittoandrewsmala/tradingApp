@@ -58,8 +58,7 @@ class TradeManager:
             ordNum=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
-                symbol=symbol,
-                price=price
+                symbol=symbol
             )
 
             self.current_symbol = symbol
@@ -75,8 +74,7 @@ class TradeManager:
             ordNum=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
-                symbol=symbol,
-                price=price 
+                symbol=symbol
             )
             
 

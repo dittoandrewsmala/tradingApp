@@ -1,4 +1,5 @@
 import requests
+from Order import Order
 import config
 import hashlib
 import webbrowser
@@ -36,7 +37,7 @@ def start_flask():
     """Run Flask in background to receive request_code"""
     app.run(host="0.0.0.0", port=8080)
 
-
+order = Order()
 
 logger = Logger()
 
@@ -124,63 +125,18 @@ class Broker:
         
         token = next(item["token"] for item in data["values"] if item["idxname"] == "Nifty 50")
         return  token
+    
+    def place_order(self, side, lotIndex,symbol):
 
-    def place_order(self, side, lotIndex,symbol, price):
-
-        url = config.ORDER_URL
-        headers = {
-            "Content-Type": "application/json"
-        }
-        
+               
         # Find year part
         year_full = symbol[10:14]   # 2026
         year_short = year_full[2:]  # 26
 
         symbol = symbol.replace(year_full, year_short)
 
-        qty = lotnumbers[lotIndex] * config.LOT_SIZE
-        target= target_arr[lotIndex]
-        stop_loss = stop__loss[lotIndex]    
+        return order.sumbit_order(side, symbol, lotIndex)
 
-        if side == "B":
-            price = price + 0.5
-        else:
-            price = price - 0.5
-
-        jdata = {
-            "uid": config.USER_ID,
-            "actid": config.USER_ID ,
-             "exch": config.EXC_NFO,
-             "tsym": symbol,  # Extract base symbol (e.g., NIFTY24FEB)
-             "qty": str(qty),
-             "prc": str(price),
-             "prd": "I",
-             "trantype": side,
-             "prctyp": "LMT",
-             "ret": "DAY"
-        }
-        
-        # Properly format payload with JSON-encoded jData
-        payload = f"jData={json.dumps(jdata)}&jKey={self.session}"
-        
-        print("Fetching positions with payload:"+ payload)
-
-        try:
-            res = requests.post(url, headers=headers, data=payload)
-        except Exception as e:
-            print("❌ Request error while placing order:"+ str(e))
-            raise Exception("Failed to place order: " + str(e))
-        print("Order placement response:"+ res.text)
-        input("Do want to continue ? ").strip()
-        try:
-            data = res.json()
-        except ValueError:
-            raise Exception("❌ Failed to decode JSON response:"+ res.text)
-            return False
-
-        logger.printD(data)
-        order_no = data.get("norenordno")
-        return order_no
     
 
     def get_max_payout(self):
