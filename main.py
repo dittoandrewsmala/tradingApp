@@ -35,6 +35,7 @@ if not signalStarted:
         logger.printD("🚀 Starting signal generation...")
         signalStarted = True
         start_Price=broker.get_max_payout()
+        print("start_Price: "+ str(start_Price))
         choice = input("Do want to give index value ? ").strip()
         if choice.lower() == "yes":
             lotIndex = int(input("Enter lot index (0, 1, 2, ...): ").strip())
@@ -65,8 +66,12 @@ def on_tick(price):
         logger.printR("⚠️ Trade exited."+ str(ord_numer))
         isTradeActive = False
         ord_numer = None
-   
+    print("Signal: "+ str(signal))
+    print("isTradeActive: "+ str(isTradeActive))
+    print("Current Time: "+ str(current_time))
+    print("Cutoff Time: "+ str(current_time >= time(9, 30)))
     print("Flag Signal : "+ str(signal and not isTradeActive and current_time >= time(9, 30)))
+    
     
     if signal and not isTradeActive and current_time >= time(9, 30):
         input("Do want to continue ? ").strip()
@@ -81,8 +86,7 @@ def on_tick(price):
 def checkTradeActive():
     global start_Price, lotIndex
     current_Price=broker.get_max_payout()
-    if start_Price is None:
-        return False  # Wait for initialization
+    print("current_Price: "+ str(current_Price))
     if current_Price > start_Price:
         start_Price = current_Price
         lotIndex=0
