@@ -180,7 +180,6 @@ class Broker:
 
     def get_max_payout(self):
         url = config.MAX_PAYOUT_URL
-        time.sleep(60)
         headers = {
             "Content-Type": "application/json"
         }
