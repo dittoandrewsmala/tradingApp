@@ -149,13 +149,10 @@ class Broker:
              "tsym": symbol,  # Extract base symbol (e.g., NIFTY24FEB)
              "qty": str(qty),
              "prc": str(0),
-             "prd": "B",
+             "prd": "I",
              "trantype": side,
              "prctyp": "MKT",
-             "ret": "DAY",
-             "trailprc" :"0",
-             "bpprc": str(target*config.stop_target_counter),
-             "blprc": str(stop_loss*config.stop_target_counter)
+             "ret": "DAY"
         }
         
         # Properly format payload with JSON-encoded jData
