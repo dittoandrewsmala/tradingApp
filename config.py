@@ -42,6 +42,11 @@ MIN_CANDLES = 10  # Minimum candles required for indicators
 # R or D
 trade_log ="R"
 
+# ===== RISK MANAGEMENT =====
+STOP_LOSS = 5      # Stop loss points
+TARGET = 10        # Target profit points
+TRAIL = 3         # Trailing stop points
+
 
 
 
