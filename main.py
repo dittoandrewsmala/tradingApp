@@ -76,9 +76,9 @@ def on_tick(price):
 
     
     if signal and not isTradeActive and current_time >= time(9, 30):
+        ord_numer=trade.on_signal(signal, price,lotIndex)
         input("Do want to continue ? ").strip()
         print("index value: "+ str(lotIndex))
-        ord_numer=trade.on_signal(signal, price,lotIndex)
         if ord_numer is not None:
             isTradeActive = True
             

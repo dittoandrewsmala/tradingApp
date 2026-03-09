@@ -160,11 +160,12 @@ class Broker:
         # Properly format payload with JSON-encoded jData
         payload = f"jData={json.dumps(jdata)}&jKey={self.session}"
         
-        logger.printR("Fetching positions with payload:"+ payload)
+        print("Fetching positions with payload:"+ payload)
 
         try:
             res = requests.post(url, headers=headers, data=payload)
         except Exception as e:
+            print("❌ Request error while placing order:"+ str(e))
             raise Exception("Failed to place order: " + str(e))
 
         try:
