@@ -46,6 +46,47 @@ def get_ltp(symbol):
     return None
 
 
+# ---------------- ORDERBOOK ---------------- #
+
+def get_order_status(order_id):
+
+    data = {"uid": config.USER_ID}
+
+    res = api("/OrderBook", data)
+
+    if not res:
+        return None, None
+
+    for order in res:
+        if order["norenordno"] == order_id:
+            status = order["status"]
+            price = order.get("avgprc", "0")
+            return status, float(price)
+
+    return None, None
+
+
+def wait_for_fill(order_id):
+
+    while True:
+
+        status, price = get_order_status(order_id)
+
+        if status == "COMPLETE":
+            print("✅ Entry filled at:", price)
+            return price
+
+        elif status == "REJECTED":
+            print("❌ Order rejected")
+            return None
+
+        elif status == "CANCELED":
+            print("❌ Order cancelled")
+            return None
+
+        time.sleep(1)
+
+
 # ---------------- ORDER PLACEMENT ---------------- #
 
 def place_order(order):
@@ -66,9 +107,9 @@ def place_entry(side, symbol, qty):
     ltp = get_ltp(symbol)
 
     if side == "B":
-        price = round(ltp + 0.3,2)
+        price = round(ltp + 0.3, 2)
     else:
-        price = round(ltp - 0.3,2)
+        price = round(ltp - 0.3, 2)
 
     order = {
         "uid": config.USER_ID,
@@ -85,7 +126,7 @@ def place_entry(side, symbol, qty):
 
     order_id = place_order(order)
 
-    return order_id, price
+    return order_id
 
 
 # ---------------- EXIT ---------------- #
@@ -96,10 +137,10 @@ def exit_entry(side, symbol, qty):
 
     if side == "B":
         exit_side = "S"
-        price = round(ltp - 0.5,2)   # sell below market
+        price = round(ltp - 0.5, 2)
     else:
         exit_side = "B"
-        price = round(ltp + 0.5,2)   # buy above market
+        price = round(ltp + 0.5, 2)
 
     order = {
         "uid": config.USER_ID,
@@ -114,9 +155,7 @@ def exit_entry(side, symbol, qty):
         "ret": "DAY"
     }
 
-    order_id = place_order(order)
-
-    return order_id
+    return place_order(order)
 
 
 # ---------------- MAIN TRADE FUNCTION ---------------- #
@@ -125,14 +164,20 @@ def submit_order(side, symbol, lotIndex):
 
     qty = lotnumbers[lotIndex] * config.LOT_SIZE
 
-    entry_id, entry_price = place_entry(side, symbol, qty)
+    entry_id = place_entry(side, symbol, qty)
 
     if not entry_id:
         return None
 
-    print("Entry placed:", entry_id)
+    print("Entry order placed:", entry_id)
 
-    # Calculate target and stoploss based on side
+    # wait for execution
+    entry_price = wait_for_fill(entry_id)
+
+    if not entry_price:
+        return None
+
+    # calculate target & SL
     if side == "B":
         target = entry_price + target_arr[lotIndex]
         stop_loss = entry_price - stop__loss[lotIndex]
@@ -143,8 +188,6 @@ def submit_order(side, symbol, lotIndex):
     print("Entry:", entry_price)
     print("Target:", target)
     print("SL:", stop_loss)
-
-    time.sleep(2)
 
     while True:
 
