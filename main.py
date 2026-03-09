@@ -46,7 +46,10 @@ def on_tick(price):
     global signalStarted, lotIndex, isTradeActive ,ord_numer,start_Price,current_Price
     
     #logger.printR("LTP:"+ str(price))
-
+    if(ord_numer is not None):
+        print("ord_numerord_numer: "+ str(ord_numer))
+        
+    
     ## receving signal 
     signal = strategy.signal(price)
     print("signal: "+ str(signal))

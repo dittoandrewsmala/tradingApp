@@ -125,7 +125,7 @@ class Broker:
         token = next(item["token"] for item in data["values"] if item["idxname"] == "Nifty 50")
         return  token
 
-    def place_order(self, side, lotIndex,symbol):
+    def place_order(self, side, lotIndex,symbol, price):
 
         url = config.ORDER_URL
         headers = {
@@ -142,16 +142,21 @@ class Broker:
         target= target_arr[lotIndex]
         stop_loss = stop__loss[lotIndex]    
 
+        if side == "B":
+            price = price + 0.5
+        else:
+            price = price - 0.5
+
         jdata = {
             "uid": config.USER_ID,
             "actid": config.USER_ID ,
              "exch": config.EXC_NFO,
              "tsym": symbol,  # Extract base symbol (e.g., NIFTY24FEB)
              "qty": str(qty),
-             "prc": str(0),
+             "prc": str(price),
              "prd": "I",
              "trantype": side,
-             "prctyp": "MKT",
+             "prctyp": "LMT",
              "ret": "DAY"
         }
         

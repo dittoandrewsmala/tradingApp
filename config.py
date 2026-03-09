@@ -36,7 +36,7 @@ CUT_OFF_TIME = 13
 # increse yime for stop loss and target hit check value incress to avoid mising target hit and stop loss hit
 WAIT_MARKETFEED_TIME = 30
 
-timeInterval = 5  # in seconds
+timeInterval = 1  # in seconds
 LOT_SIZE = 65   # NIFTY lot size
 MIN_CANDLES = 10  # Minimum candles required for indicators
 # R or D
