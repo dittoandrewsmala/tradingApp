@@ -79,7 +79,10 @@ def on_tick(price):
             
 
 def checkTradeActive():
+    global start_Price, lotIndex
     current_Price=broker.get_max_payout()
+    if start_Price is None:
+        return False  # Wait for initialization
     if current_Price > start_Price:
         start_Price = current_Price
         lotIndex=0
