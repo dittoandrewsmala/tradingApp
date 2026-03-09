@@ -49,6 +49,7 @@ def on_tick(price):
 
     ## receving signal 
     signal = strategy.signal(price)
+    print("signal: "+ str(signal))
     #isProfitable = position.get_positions(broker.session)
     
     ist = pytz.timezone("Asia/Kolkata")
@@ -72,6 +73,7 @@ def on_tick(price):
     print("Cutoff Time: "+ str(current_time >= time(9, 30)))
     print("Flag Signal : "+ str(signal and not isTradeActive and current_time >= time(9, 30)))
     
+
     
     if signal and not isTradeActive and current_time >= time(9, 30):
         input("Do want to continue ? ").strip()

@@ -25,10 +25,10 @@ class Strategy:
     def signal(self, price):
 
         self.prices.append(price)
-
+        print("signal signalsignal :fefefe ")
         if len(self.prices) < config.MIN_CANDLES:
             return None
-
+        print("signal sstarts")
         df = pd.DataFrame(list(self.prices), columns=["price"])
 
         # Indicators
@@ -68,7 +68,7 @@ class Strategy:
                     signal = "SELL"
 
         # ================= EXIT LOGIC =================
-        else:
+        """ else:
 
             # Exit LONG
             if self.position == "LONG" and ema9 < ema21:
@@ -80,7 +80,7 @@ class Strategy:
             elif self.position == "SHORT" and ema9 > ema21:
                 logger.printD(f"🔁 EXIT SHORT @ {price}")
                 self.reset()
-                signal = "EXIT"
+                signal = "EXIT" """
 
         # Store previous EMA values
         self.prev_ema9 = ema9
