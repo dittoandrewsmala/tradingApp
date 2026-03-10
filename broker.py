@@ -1,5 +1,5 @@
 import requests
-from Order import Order
+from Order import submit_order
 import config
 import hashlib
 import webbrowser
@@ -37,7 +37,7 @@ def start_flask():
     """Run Flask in background to receive request_code"""
     app.run(host="0.0.0.0", port=8080)
 
-order = Order()
+# Note: submit_order is imported above; no Order class exists
 
 logger = Logger()
 
@@ -135,7 +135,8 @@ class Broker:
 
         symbol = symbol.replace(year_full, year_short)
 
-        return order.sumbit_order(side, symbol, lotIndex)
+        # call the standalone submit_order function (fixed spelling)
+        return submit_order(side, symbol, lotIndex)
 
     
 
