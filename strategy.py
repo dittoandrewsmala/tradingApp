@@ -25,8 +25,6 @@ class Strategy:
     def signal(self, price):
 
         self.prices.append(price)
-        print("self.prices: "+ str(self.prices))
-        print("self.prices length: "+ str(len(self.prices)))
         if len(self.prices) < config.MIN_CANDLES:
             return None
         print("signal starts")
