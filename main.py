@@ -68,10 +68,7 @@ def on_tick(price):
         isTradeActive = False
         ord_numer = None
     print("Signal: "+ str(signal))
-    print("isTradeActive: "+ str(isTradeActive))
-    print("Current Time: "+ str(current_time))
-    print("Cutoff Time: "+ str(current_time >= time(9, 30)))
-    print("Flag Signal : "+ str(signal and not isTradeActive and current_time >= time(9, 30)))
+    
     
 
     
