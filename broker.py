@@ -1,5 +1,5 @@
 import requests
-from Order import submit_order
+from Order import Order
 import config
 import hashlib
 import webbrowser
@@ -37,15 +37,8 @@ def start_flask():
     """Run Flask in background to receive request_code"""
     app.run(host="0.0.0.0", port=8080)
 
-# Note: submit_order is imported above; no Order class exists
-
-logger = Logger()
-
-lotnumbers = [1,1,1,1,2,2,3,4,5,8,11,14,18,23,35]
-
-target_arr =[2,3,5,8,6,10.3,10.3,12,16,15,15,15,16,18,18]
-
-stop__loss =[1,1.5,3,5,4,5,5,7,8,5,5,5,8,9,9]
+# instantiate order helper class
+order = Order()
 
 
 class Broker:
@@ -134,9 +127,9 @@ class Broker:
         year_short = year_full[2:]  # 26
 
         symbol = symbol.replace(year_full, year_short)
-
-        # call the standalone submit_order function (fixed spelling)
-        return submit_order(side, symbol, lotIndex)
+        order.session = self.session 
+        # delegate to Order class instance
+        return order.submit_order(side, symbol, lotIndex)
 
     
 
