@@ -1,4 +1,3 @@
-import pandas as pd
 from collections import deque
 import config
 from logger import Logger
@@ -8,89 +7,93 @@ logger = Logger()
 class Strategy:
 
     def __init__(self):
+
         self.prices = deque(maxlen=200)
 
-        # Trade state
-        self.position = None      # "LONG", "SHORT", or None
-        self.entry_price = None
+        # EMA values
+        self.ema9 = None
+        self.ema21 = None
 
-        # Store previous EMA values for crossover detection
+        # EMA multipliers
+        self.k9 = 2 / (9 + 1)
+        self.k21 = 2 / (21 + 1)
+
+        # VWAP approximation
+        self.total_price = 0
+        self.total_ticks = 0
+
+        # Previous EMA for crossover
         self.prev_ema9 = None
         self.prev_ema21 = None
 
+        # Position state
+        self.position = None
+        self.entry_price = None
 
-    # ---------------------------------------
-    # MAIN SIGNAL FUNCTION
-    # ---------------------------------------
+
     def signal(self, price):
 
         self.prices.append(price)
+
         if len(self.prices) < config.MIN_CANDLES:
             return None
-        print("signal starts")
-        df = pd.DataFrame(list(self.prices), columns=["price"])
 
-        # Indicators    
-        ema9_series = df["price"].ewm(span=9, adjust=False).mean()
-        ema21_series = df["price"].ewm(span=21, adjust=False).mean()
+        # ---------------- EMA CALCULATION ----------------
+        if self.ema9 is None:
+            self.ema9 = price
+            self.ema21 = price
+        else:
+            self.ema9 = (price * self.k9) + (self.ema9 * (1 - self.k9))
+            self.ema21 = (price * self.k21) + (self.ema21 * (1 - self.k21))
 
-        ema9 = ema9_series.iloc[-1]
-        ema21 = ema21_series.iloc[-1]
-
-        # Simplified VWAP (tick-based approximation)
-        vwap = df["price"].expanding().mean().iloc[-1]
+        # ---------------- VWAP APPROX ----------------
+        self.total_price += price
+        self.total_ticks += 1
+        vwap = self.total_price / self.total_ticks
 
         signal = None
 
-        # ================= ENTRY LOGIC =================
+        # ---------------- ENTRY ----------------
         if self.position is None:
 
-            # Detect bullish crossover
-            if (self.prev_ema9 is not None and
-                self.prev_ema21 is not None):
+            if self.prev_ema9 is not None and self.prev_ema21 is not None:
 
-                bullish_cross = self.prev_ema9 <= self.prev_ema21 and ema9 > ema21
-                bearish_cross = self.prev_ema9 >= self.prev_ema21 and ema9 < ema21
+                bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
+                bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
 
-                # LONG ENTRY
                 if bullish_cross and price > vwap:
                     self.position = "LONG"
                     self.entry_price = price
-                    logger.printD(f"✅ BUY @ {price}")
+                    logger.printD(f"BUY @ {price}")
                     signal = "BUY"
 
-                # SHORT ENTRY
                 elif bearish_cross and price < vwap:
                     self.position = "SHORT"
                     self.entry_price = price
-                    logger.printD(f"❌ SELL @ {price}")
+                    logger.printD(f"SELL @ {price}")
                     signal = "SELL"
 
-        # ================= EXIT LOGIC =================
+        # ---------------- EXIT ----------------
         """ else:
 
-            # Exit LONG
-            if self.position == "LONG" and ema9 < ema21:
-                logger.printD(f"🔁 EXIT LONG @ {price}")
+            if self.position == "LONG" and self.ema9 < self.ema21:
+                logger.printD(f"EXIT LONG @ {price}")
                 self.reset()
                 signal = "EXIT"
 
-            # Exit SHORT
-            elif self.position == "SHORT" and ema9 > ema21:
-                logger.printD(f"🔁 EXIT SHORT @ {price}")
+            elif self.position == "SHORT" and self.ema9 > self.ema21:
+                logger.printD(f"EXIT SHORT @ {price}")
                 self.reset()
                 signal = "EXIT" """
 
-        # Store previous EMA values
-        self.prev_ema9 = ema9
-        self.prev_ema21 = ema21
+        # store previous
+        self.prev_ema9 = self.ema9
+        self.prev_ema21 = self.ema21
 
         return signal
 
 
-    # ---------------------------------------
-    # RESET TRADE STATE
-    # ---------------------------------------
     def reset(self):
+
         self.position = None
         self.entry_price = None
