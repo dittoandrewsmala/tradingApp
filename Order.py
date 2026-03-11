@@ -13,13 +13,21 @@ stop__loss =[1,1.5,3,5,4,5,5,7,8,5,5,5,8,9,9]
 logger = Logger()
 
 # ---------------- API WRAPPER ---------------- #
+class Order:
+    """Encapsulates all API interactions and order functions."""
+
+    def __init__(self):
+        self.session = None
+
+        
 
 def api(url, data):
 
     headers = {"Content-Type": "application/json"}
-
-    payload = f"jData={json.dumps(data)}&jKey={config.SESSION_TOKEN}"
-
+    
+    
+    payload = f"jData={json.dumps(data)}&jKey={self.session}"
+    print("API Payload: " + payload)
     try:
         res = requests.post(config.BASE + url, headers=headers, data=payload)
         return res.json()
