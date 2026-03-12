@@ -13,7 +13,7 @@ import pytz
 
 logger = Logger()
 broker = Broker()
-broker.login()  
+broker.login1()  
 position = Position()
 nifty_token =broker.get_nifty_token()
 
@@ -31,6 +31,7 @@ current_Price = None
 
 
 ## initalize signal generation and max payout check
+
 if not signalStarted:
         logger.printD("🚀 Starting signal generation...")
         signalStarted = True
@@ -50,6 +51,7 @@ def on_tick(price):
     ## receving signal 
     signal = strategy.signal(price)
     print("signal: "+ str(signal))
+    
     #isProfitable = position.get_positions(broker.session)
     
     ist = pytz.timezone("Asia/Kolkata")
@@ -68,18 +70,13 @@ def on_tick(price):
         isTradeActive = False
         ord_numer = None
     print("Signal: "+ str(signal))
-    
-    
-
-    
+     
     if signal and not isTradeActive and current_time >= time(9, 30):
         ord_numer=trade.on_signal(signal, price,lotIndex)
         input("Do want to continue ? ").strip()
         print("index value: "+ str(lotIndex))
         if ord_numer is not None:
             isTradeActive = True
-            
-
             
 
 def checkTradeActive():

@@ -15,28 +15,53 @@ class Order:
         self.target_arr = [2,3,5,8,6,10.3,10.3,12,16,15,15,15,16,18,18]
         self.stop__loss = [1,1.5,3,5,4,5,5,7,8,5,5,5,8,9,9]
 
-    def api(self, url, data):
-        headers = {"Content-Type": "application/json"}
-        payload = f"jData={json.dumps(data)}&jKey={self.session_token}"
+    def api(self, url, jdata):
         
-        print("API Request Payload:", payload)
+        headers = {
+            "Content-Type": "application/json"
+        }
+        payload = f"jData={json.dumps(jdata)}&jKey={self.session_token}"
         try:
-            res = requests.post(config.BASE + url, headers=headers, data=payload)
-            return res.json()
+            res = requests.post(url, headers=headers, data=payload)
         except Exception as e:
-            logger.printR("❌ API Error: " + str(e))
-            return None
+            logger.printR("❌ Request error while SearchScrip:"+ str(e))
+            raise Exception("Failed to SearchScrip: " + str(e))
+    
+        try:
+            data = res.json()
+        except ValueError:
+            raise Exception("Failed to decode JSON response: " + res.text)
+        
+        return data
+    
+    
+    def get_token_from_tsym(self, data, tsym):
+        for item in data.get("values", []):
+            print("Checking tsym:", item.get("tsym"))
+            if item.get("tsym") == tsym:
+                return item.get("token")
+        return None
+   
+    def SearchScrip(self, symbol):
+        jdata = {"uid": config.USER_ID,"stext": symbol, "exch": "NFO" }
+        data= self.api(config.SEARCH_SCRIP_URL, jdata)
+        token = self.get_token_from_tsym(data, symbol)
+        return  token
+
+
 
     def get_ltp(self, symbol):
-        data = {"uid": config.USER_ID, "exch": "NFO", "tsym": symbol}
-        res = self.api("/GetQuotes", data)
-        if res and "lp" in res:
-            return float(res["lp"])
+        url = config.GET_QUOTES
+        token= self.SearchScrip(symbol)
+        jdata = {"uid": config.USER_ID, "exch": "NFO", "token": token}
+        data= self.api(config.GET_QUOTES, jdata)      
+        if data and "lp" in data:
+            return float(data["lp"])
         return None
 
     def get_order_status(self, order_id):
         data = {"uid": config.USER_ID}
-        res = self.api("/OrderBook", data)
+        res = self.api(config.ORDER_BOOK_URL, data)
         if not res:
             return None, None
         for order in res:
@@ -60,9 +85,9 @@ class Order:
                 return None
             time.sleep(1)
 
-    def place_order(self, order):
-        print("Placing order:", order)
-        res = self.api("/PlaceOrder", order)
+    def place_order(self, jdata):
+        
+        res = self.api(config.PLACE_ORDER_URL, jdata)
         if not res or res.get("stat") != "Ok":
             logger.printR("❌ Order failed: " + str(res))
             return None
@@ -87,7 +112,7 @@ class Order:
             "prc": str(price),
             "ret": "DAY"
         }
-        print(order)
+        
         return self.place_order(order)
 
     def exit_entry(self, side, symbol, qty):

@@ -18,8 +18,13 @@ CANCEL_URL = "https://piconnect.flattrade.in/PiConnectAPI/CancelOrder"
 MAX_PAYOUT_URL = "https://piconnect.flattrade.in/PiConnectAPI/GetMaxPayoutAmount"
 
 
-
+SEARCH_SCRIP_URL = "https://piconnect.flattrade.in/PiConnectAPI/SearchScrip"
 BASE = "https://piconnect.flattrade.in/PiConnectTP"
+
+GET_QUOTES="https://piconnect.flattrade.in/PiConnectAPI/GetQuotes"
+PLACE_ORDER_URL = "https://piconnect.flattrade.in/PiConnectAPI/PlaceOrder"
+
+ORDER_BOOK_URL = "https://piconnect.flattrade.in/PiConnectAPI/OrderBook"
 
 SEGMENT="NIFTY 50"
 EXCHANGE_NSE = "NSE"
