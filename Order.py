@@ -61,6 +61,7 @@ class Order:
             time.sleep(1)
 
     def place_order(self, order):
+        print("Placing order:", order)
         res = self.api("/PlaceOrder", order)
         if not res or res.get("stat") != "Ok":
             logger.printR("❌ Order failed: " + str(res))
@@ -73,6 +74,7 @@ class Order:
             price = round(ltp + 0.3, 2)
         else:
             price = round(ltp - 0.3, 2)
+        
         order = {
             "uid": config.USER_ID,
             "actid": config.USER_ID,
@@ -85,6 +87,7 @@ class Order:
             "prc": str(price),
             "ret": "DAY"
         }
+        print(order)
         return self.place_order(order)
 
     def exit_entry(self, side, symbol, qty):
@@ -114,6 +117,7 @@ class Order:
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         print(f"Placing {side} order for {qty} units of {symbol}")
         entry_id = self.place_entry(side, symbol, qty)
+        
         if not entry_id:
             return None
         
