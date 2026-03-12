@@ -107,17 +107,20 @@ class Order:
             "prc": str(price),
             "ret": "DAY"
         }
+        print(f"Placing exit order: {exit_side} {qty} of {symbol} at {price}")
         return self.place_order(order)
 
     def submit_order(self, side, symbol, lotIndex):
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
+        print(f"Placing {side} order for {qty} units of {symbol}")
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
             return None
+        
         print("Entry order placed:", entry_id)
         
         entry_price = self.wait_for_fill(entry_id)
-        
+        print("Entry price received:", entry_price)
         if not entry_price:
             return None
         if side == "B":

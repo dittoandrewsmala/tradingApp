@@ -127,7 +127,7 @@ class Broker:
         year_short = year_full[2:]  # 26
 
         symbol = symbol.replace(year_full, year_short)
-        order.session = self.session 
+        order.session_token = self.session 
         # delegate to Order class instance
         return order.submit_order(side, symbol, lotIndex)
 
