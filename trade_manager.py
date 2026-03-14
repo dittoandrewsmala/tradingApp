@@ -1,3 +1,5 @@
+from turtle import distance
+
 import config 
 import json
 import requests
@@ -34,13 +36,20 @@ class TradeManager:
 
         expiry = next_tuesday.strftime("%d%b%Y").upper()
         
+        # ATM strike
+        atm = round(price / 50) * 50
 
         if option_type == "CE":
-            return f"NIFTY{expiry}C{strike}"
+            strike = atm + (distance * 50)   # move OTM for cheaper CE
+            value="C"
 
-        if option_type == "PE":
-            return f"NIFTY{expiry}P{strike}"
-
+        elif option_type == "PE":
+            strike = atm - (distance * 50)   # move OTM for cheaper PE
+            value="P"
+        
+        return f"NIFTY{expiry}value{strike}"
+    
+       
     # ---------- Entry Logic ----------
     def on_signal(self, signal, price,lotIndex):
 
