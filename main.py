@@ -13,7 +13,7 @@ import pytz
 
 logger = Logger()
 broker = Broker()
-broker.login1()  
+broker.login()  
 position = Position()
 nifty_token =broker.get_nifty_token()
 
