@@ -147,12 +147,11 @@ class Order:
         if not entry_id:
             return None
         
-        print("Entry order placed:", entry_id)
         
         entry_price = self.wait_for_fill(entry_id)
-        print("Entry price received:", entry_price)
         if not entry_price:
             return None
+        
         if side == "B":
             target = entry_price + self.target_arr[lotIndex]
             stop_loss = entry_price - self.stop__loss[lotIndex]
@@ -163,21 +162,15 @@ class Order:
         print("Entry:", entry_price)
         print("Target:", target)
         print("SL:", stop_loss)
-        
+        print("==================================================================")
         while True:
-            print("LTP VALUE checking:")
+            
             ltp = self.get_ltp(symbol)
+            print("LTP VALUE checking:", ltp)
             if ltp is None:
                 time.sleep(0.5)
                 continue
-            
-            
-            print("LTP VALUE:", ltp)
-            print("Checking exit conditions...")
-            print(f"Target: {target}, Stop Loss: {stop_loss}")
-            print(f"Current LTP: {ltp}")   
-            
-
+              
             if side == "B":
                 print(side)
                 print(f"Current LTP: {ltp >= target}")  
@@ -205,5 +198,5 @@ class Order:
                     break
 
             time.sleep(1)
-
+        print("==================================================================")
         return entry_id
