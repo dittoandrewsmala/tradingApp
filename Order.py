@@ -142,21 +142,17 @@ class Order:
     def submit_order(self, side, symbol, lotIndex):
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         print(f"Placing {side} order for {qty} units of {symbol}")
-        #entry_id = self.place_entry(side, symbol, qty)
-        entry_id="26031600113616"
+        entry_id = self.place_entry(side, symbol, qty)
         
         if not entry_id:
             return None
         
         print("Entry order placed:", entry_id)
         
-        #entry_price = self.wait_for_fill(entry_id)
-        entry_price=176.75
+        entry_price = self.wait_for_fill(entry_id)
         print("Entry price received:", entry_price)
         if not entry_price:
             return None
-        
-        
         if side == "B":
             target = entry_price + self.target_arr[lotIndex]
             stop_loss = entry_price - self.stop__loss[lotIndex]
@@ -171,7 +167,7 @@ class Order:
         while True:
             print("LTP VALUE checking:")
             ltp = self.get_ltp(symbol)
-            if not ltp:
+            if ltp is None:
                 time.sleep(0.5)
                 continue
             
