@@ -1,12 +1,12 @@
+from dateutil.utils import today
+
 import config 
 import json
 import requests
 from datetime import datetime, timedelta
 from logger import Logger
 logger = Logger()
-from Order import Order
 
-order = Order()
 
 class TradeManager:
 
@@ -22,38 +22,27 @@ class TradeManager:
         return strike
         
     # ---------- Generate Option Symbol ----------
-    def get_option_symbol(self, price, option_type,strike):
+    def get_option_symbol(self, price, option_type):
 
         today = datetime.today()
 
-        # Tuesday = 1 (Monday=0)
         days_ahead = 1 - today.weekday()
-
         if days_ahead < 0:
             days_ahead += 7
 
-        next_tuesday = today + timedelta(days=days_ahead)
+        expiry = (today + timedelta(days=days_ahead)).strftime("%d%b%Y").upper()
 
-        expiry = next_tuesday.strftime("%d%b%Y").upper()
-        
-        # ATM strike
         atm = round(price / 50) * 50
-        
-        for i in range(1, 20):
 
-            if option_type == "CE":
-             strike = atm + (i * 50)   # OTM call
-             symbol = f"NIFTY{expiry}C{strike}"
+        option_type = option_type.upper()
 
+        # choose far OTM strike
+        if option_type == "CE":
+            strike = atm + 300
         else:
-             strike = atm - (i * 50)   # OTM put
-             symbol = f"NIFTY{expiry}P{strike}"
+            strike = atm - 300
 
-        ltp = order.get_ltp(symbol)  # Check if symbol is valid
-        if ltp and 30 <= ltp <= 60:   # desired cheap premium
-            print("Selected:", symbol, "Premium:", ltp)
-            return symbol
-        
+        return f"NIFTY{expiry}{'C' if option_type=='CE' else 'P'}{strike}"
 
     # ---------- Entry Logic ----------
     def on_signal(self, signal, price,lotIndex):
@@ -67,6 +56,7 @@ class TradeManager:
         if signal == "BUY":
             strike = self.getStrike(price)
             symbol = self.get_option_symbol(price, "CE", strike)
+            print("Generated symbol:", symbol)
             #lp_value = self.get_quotes(search_scrips_token)
             
             ordNum=self.broker.place_order(
