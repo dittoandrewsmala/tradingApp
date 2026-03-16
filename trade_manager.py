@@ -61,7 +61,7 @@ class TradeManager:
             strike = self.getStrike(price)
             symbol = self.get_option_symbol(price, "CE", strike)
             #lp_value = self.get_quotes(search_scrips_token)
-            print("Option Symbol: "+ str(symbol))
+            
             ordNum=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
@@ -77,7 +77,7 @@ class TradeManager:
 
             strike = self.getStrike(price)
             symbol = self.get_option_symbol(price, "PE", strike)
-            print("Option Symbol: "+ str(symbol))
+            
             ordNum=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,

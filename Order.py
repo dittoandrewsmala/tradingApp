@@ -87,7 +87,7 @@ class Order:
 
     def place_order(self, jdata):
         
-        #res = self.api(config.PLACE_ORDER_URL, jdata)
+        res = self.api(config.PLACE_ORDER_URL, jdata)
         if not res or res.get("stat") != "Ok":
             logger.printR("❌ Order failed: " + str(res))
             return None
