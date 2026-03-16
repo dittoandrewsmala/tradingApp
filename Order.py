@@ -164,10 +164,18 @@ class Order:
         print("SL:", stop_loss)
         
         while True:
+            print("LTP VALUE checking:")
             ltp = self.get_ltp(symbol)
             if not ltp:
                 continue
-            print("LTP:", ltp)
+            
+            
+            print("LTP VALUE:", ltp)
+            print("Checking exit conditions...")
+            print(f"Target: {target}, Stop Loss: {stop_loss}")
+            print(f"Current LTP: {ltp}")   
+            print(side)
+
             if side == "B":
                 if ltp >= target:
                     print("🎯 Target Hit")
