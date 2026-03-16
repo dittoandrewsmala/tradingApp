@@ -1,5 +1,3 @@
-from dateutil.utils import today
-
 import config 
 import json
 import requests
@@ -22,27 +20,33 @@ class TradeManager:
         return strike
         
     # ---------- Generate Option Symbol ----------
-    def get_option_symbol(self, price, option_type):
+    def get_option_symbol(self, price, option_type,strike):
 
         today = datetime.today()
 
+        # Tuesday = 1 (Monday=0)
         days_ahead = 1 - today.weekday()
+
         if days_ahead < 0:
             days_ahead += 7
 
-        expiry = (today + timedelta(days=days_ahead)).strftime("%d%b%Y").upper()
+        next_tuesday = today + timedelta(days=days_ahead)
 
+        expiry = next_tuesday.strftime("%d%b%Y").upper()
+        
+        # ATM strike
         atm = round(price / 50) * 50
-
-        option_type = option_type.upper()
-
         # choose far OTM strike
         if option_type == "CE":
             strike = atm + 300
         else:
             strike = atm - 300
+        
+        if option_type == "CE":
+            return f"NIFTY{expiry}C{strike}"
 
-        return f"NIFTY{expiry}{'C' if option_type=='CE' else 'P'}{strike}"
+        if option_type == "PE":
+            return f"NIFTY{expiry}P{strike}"
 
     # ---------- Entry Logic ----------
     def on_signal(self, signal, price,lotIndex):
@@ -56,9 +60,8 @@ class TradeManager:
         if signal == "BUY":
             strike = self.getStrike(price)
             symbol = self.get_option_symbol(price, "CE", strike)
-            print("Generated symbol:", symbol)
             #lp_value = self.get_quotes(search_scrips_token)
-            
+            print("Option Symbol: "+ str(symbol))
             ordNum=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
@@ -74,7 +77,7 @@ class TradeManager:
 
             strike = self.getStrike(price)
             symbol = self.get_option_symbol(price, "PE", strike)
-           
+            print("Option Symbol: "+ str(symbol))
             ordNum=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
