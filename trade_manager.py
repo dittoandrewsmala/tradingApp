@@ -1,5 +1,3 @@
-from turtle import distance
-
 import config 
 import json
 import requests
