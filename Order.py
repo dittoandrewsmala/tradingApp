@@ -37,7 +37,7 @@ class Order:
     
     def get_token_from_tsym(self, data, tsym):
         for item in data.get("values", []):
-            print("Checking tsym:", item.get("tsym"))
+            #print("Checking tsym:", item.get("tsym"))
             if item.get("tsym") == tsym:
                 return item.get("token")
         return None
@@ -116,7 +116,7 @@ class Order:
         return self.place_order(order)
 
     def exit_entry(self, side, symbol, qty):
-        print(f"Placing sfsf exit order for {qty} units of {symbol}")
+        #print(f"Placing sfsf exit order for {qty} units of {symbol}")
         ltp = self.get_ltp(symbol)
         if side == "B":
             exit_side = "S"
@@ -136,7 +136,7 @@ class Order:
             "prc": str(price),
             "ret": "DAY"
         }
-        print(f"Placing exit order: {exit_side} {qty} of {symbol} at {price}")
+        #print(f"Placing exit order: {exit_side} {qty} of {symbol} at {price}")
         return self.place_order(order)
 
     def submit_order(self, side, symbol, lotIndex):
@@ -160,40 +160,42 @@ class Order:
             stop_loss = entry_price + self.stop__loss[lotIndex]
         
         print("Entry:", entry_price)
-        print("Target:", target)
-        print("SL:", stop_loss)
+        print(side)
         print("==================================================================")
         while True:
             
             ltp = self.get_ltp(symbol)
             print("LTP VALUE checking:", ltp)
+            print("Target:", target)
+            print("SL:", stop_loss)
+            
             if ltp is None:
                 time.sleep(0.5)
                 continue
               
             if side == "B":
-                print(side)
-                print(f"Current LTP: {ltp >= target}")  
+                
+                  
                 if ltp >= target:
-                    print("🎯 Target Hit")
+                    print("🎯 Target Hit buy")
                     self.exit_entry(side, symbol, qty)
                     break
 
                 if ltp <= stop_loss:
-                    print("🛑 Stoploss Hit")
+                    print("🛑 Stoploss Hit buy")
                     self.exit_entry(side, symbol, qty)
                     break
 
             else:
-                print(side)
-                print(f"Current LTP: {ltp <= target}") 
+                
+                
                 if ltp <= target:
-                    print("🎯 Target Hit")
+                    print("🎯 Target Hit sell ")
                     self.exit_entry(side, symbol, qty)
                     break
 
                 if ltp >= stop_loss:
-                    print("🛑 Stoploss Hit")
+                    print("🛑 Stoploss Hit sell")
                     self.exit_entry(side, symbol, qty)
                     break
 
