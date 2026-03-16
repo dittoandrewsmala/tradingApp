@@ -116,6 +116,7 @@ class Order:
         return self.place_order(order)
 
     def exit_entry(self, side, symbol, qty):
+        print(f"Placing sfsf exit order for {qty} units of {symbol}")
         ltp = self.get_ltp(symbol)
         if side == "B":
             exit_side = "S"
@@ -167,6 +168,8 @@ class Order:
             print("LTP VALUE checking:")
             ltp = self.get_ltp(symbol)
             if not ltp:
+                print("⚠️ LTP not available, waiting...")
+                time.sleep(0.5)
                 continue
             
             
@@ -174,9 +177,11 @@ class Order:
             print("Checking exit conditions...")
             print(f"Target: {target}, Stop Loss: {stop_loss}")
             print(f"Current LTP: {ltp}")   
-            print(side)
+            
 
             if side == "B":
+                print(side)
+                print(f"Current LTP: {ltp >= target}")  
                 if ltp >= target:
                     print("🎯 Target Hit")
                     self.exit_entry(side, symbol, qty)
@@ -188,7 +193,8 @@ class Order:
                     break
 
             else:
-
+                print(side)
+                print(f"Current LTP: {ltp <= target}") 
                 if ltp <= target:
                     print("🎯 Target Hit")
                     self.exit_entry(side, symbol, qty)
