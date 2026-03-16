@@ -4,7 +4,9 @@ import requests
 from datetime import datetime, timedelta
 from logger import Logger
 logger = Logger()
+from Order import Order
 
+order = Order()
 
 class TradeManager:
 
@@ -36,13 +38,22 @@ class TradeManager:
         
         # ATM strike
         atm = round(price / 50) * 50
-
         
-        if option_type == "CE":
-            return f"NIFTY{expiry}C{strike}"
+        for i in range(1, 20):
 
-        if option_type == "PE":
-            return f"NIFTY{expiry}P{strike}"
+            if option_type == "CE":
+             strike = atm + (i * 50)   # OTM call
+             symbol = f"NIFTY{expiry}C{strike}"
+
+        else:
+             strike = atm - (i * 50)   # OTM put
+             symbol = f"NIFTY{expiry}P{strike}"
+
+        ltp = order.get_ltp(symbol)  # Check if symbol is valid
+        if ltp and 30 <= ltp <= 60:   # desired cheap premium
+            print("Selected:", symbol, "Premium:", ltp)
+            return symbol
+        
 
     # ---------- Entry Logic ----------
     def on_signal(self, signal, price,lotIndex):
