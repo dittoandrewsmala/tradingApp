@@ -96,9 +96,9 @@ class Order:
     def place_entry(self, side, symbol, qty):
         ltp = self.get_ltp(symbol)
         if side == "B":
-            price = round(ltp + 0.3, 2)
+            price = round(ltp, 2)
         else:
-            price = round(ltp - 0.3, 2)
+            price = round(ltp, 2)
         
         order = {
             "uid": config.USER_ID,
@@ -203,6 +203,6 @@ class Order:
                     profitOrLoss= "LOSS"
                     break
 
-            time.sleep(1)
+            #time.sleep(1)
         print("==================================================================")
         return entry_id,profitOrLoss
