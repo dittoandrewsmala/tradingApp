@@ -1,4 +1,5 @@
 from collections import deque
+from datetime import datetime, timedelta
 import config
 from logger import Logger
 
@@ -8,37 +9,45 @@ class Strategy:
 
     def __init__(self):
 
+        # Price buffer
         self.prices = deque(maxlen=200)
 
         # EMA values
         self.ema9 = None
         self.ema21 = None
+        self.prev_ema9 = None
+        self.prev_ema21 = None
 
         # EMA multipliers
         self.k9 = 2 / (9 + 1)
         self.k21 = 2 / (21 + 1)
 
-        # VWAP approximation
-        self.total_price = 0
-        self.total_ticks = 0
-
-        # Previous EMA for crossover
-        self.prev_ema9 = None
-        self.prev_ema21 = None
+        # VWAP (REAL)
+        self.total_pv = 0
+        self.total_volume = 0
 
         # Position state
         self.position = None
         self.entry_price = None
+        self.stop_loss = None
+        self.target = None
 
+        # Trade control
+        self.last_trade_time = None
+        self.cooldown_seconds = 60   # avoid overtrading
 
-    def signal(self, price):
+    # ---------------------------------------------------
+    def signal(self, price, volume=1):
+    # ---------------------------------------------------
+
+        now = datetime.now()
 
         self.prices.append(price)
 
         if len(self.prices) < config.MIN_CANDLES:
             return None
 
-        # ---------------- EMA CALCULATION ----------------
+        # ---------------- EMA ----------------
         if self.ema9 is None:
             self.ema9 = price
             self.ema21 = price
@@ -46,12 +55,17 @@ class Strategy:
             self.ema9 = (price * self.k9) + (self.ema9 * (1 - self.k9))
             self.ema21 = (price * self.k21) + (self.ema21 * (1 - self.k21))
 
-        # ---------------- VWAP APPROX ----------------
-        self.total_price += price
-        self.total_ticks += 1
-        vwap = self.total_price / self.total_ticks
+        # ---------------- REAL VWAP ----------------
+        self.total_pv += price * volume
+        self.total_volume += volume
+        vwap = self.total_pv / self.total_volume if self.total_volume else price
 
         signal = None
+
+        # ---------------- COOLDOWN ----------------
+        if self.last_trade_time:
+            if (now - self.last_trade_time).seconds < self.cooldown_seconds:
+                return None
 
         # ---------------- ENTRY ----------------
         if self.position is None:
@@ -61,41 +75,45 @@ class Strategy:
                 bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
                 bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
 
+                # LONG ENTRY
                 if bullish_cross and price > vwap:
                     self.position = "LONG"
                     self.entry_price = price
+
+                    # Risk management
+                    self.stop_loss = price * 0.8      # 20% SL (options)
+                    self.target = price * 1.4         # 40% target
+
+                    self.last_trade_time = now
+
                     logger.printD(f"BUY @ {price}")
-                    #self.prices.clear()
                     signal = "BUY"
 
+                # SHORT ENTRY
                 elif bearish_cross and price < vwap:
                     self.position = "SHORT"
                     self.entry_price = price
+
+                    self.stop_loss = price * 1.2
+                    self.target = price * 0.6
+
+                    self.last_trade_time = now
+
                     logger.printD(f"SELL @ {price}")
-                    #self.prices.clear()
                     signal = "SELL"
 
-        # ---------------- EXIT ----------------
-        """ else:
+        
 
-            if self.position == "LONG" and self.ema9 < self.ema21:
-                logger.printD(f"EXIT LONG @ {price}")
-                self.reset()
-                signal = "EXIT"
-
-            elif self.position == "SHORT" and self.ema9 > self.ema21:
-                logger.printD(f"EXIT SHORT @ {price}")
-                self.reset()
-                signal = "EXIT" """
-
-        # store previous
+        # store previous EMA
         self.prev_ema9 = self.ema9
         self.prev_ema21 = self.ema21
 
         return signal
 
-
+    # ---------------------------------------------------
     def reset(self):
-
+    # ---------------------------------------------------
         self.position = None
         self.entry_price = None
+        self.stop_loss = None
+        self.target = None
