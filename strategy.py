@@ -117,3 +117,4 @@ class Strategy:
         self.entry_price = None
         self.stop_loss = None
         self.target = None
+        self.prices.clear()
