@@ -65,14 +65,14 @@ class Strategy:
                     self.position = "LONG"
                     self.entry_price = price
                     logger.printD(f"BUY @ {price}")
-                    self.prices.clear()
+                    #self.prices.clear()
                     signal = "BUY"
 
                 elif bearish_cross and price < vwap:
                     self.position = "SHORT"
                     self.entry_price = price
                     logger.printD(f"SELL @ {price}")
-                    self.prices.clear()
+                    #self.prices.clear()
                     signal = "SELL"
 
         # ---------------- EXIT ----------------
