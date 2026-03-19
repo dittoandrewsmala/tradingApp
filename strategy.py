@@ -1,5 +1,5 @@
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timedelta
 import config
 from logger import Logger
 
@@ -34,16 +34,14 @@ class Strategy:
 
         # Trade control
         self.last_trade_time = None
-        self.cooldown_seconds = 60
+        self.cooldown_seconds = 60   # avoid overtrading
 
     # ---------------------------------------------------
     def signal(self, price, volume=1):
     # ---------------------------------------------------
 
         now = datetime.now()
-        signal = None
 
-        # Store price
         self.prices.append(price)
 
         if len(self.prices) < config.MIN_CANDLES:
@@ -57,53 +55,59 @@ class Strategy:
             self.ema9 = (price * self.k9) + (self.ema9 * (1 - self.k9))
             self.ema21 = (price * self.k21) + (self.ema21 * (1 - self.k21))
 
-        # ---------------- VWAP ----------------
+        # ---------------- REAL VWAP ----------------
         self.total_pv += price * volume
         self.total_volume += volume
         vwap = self.total_pv / self.total_volume if self.total_volume else price
 
-        # ---------------- EXIT FIRST ----------------
-        if self.position is not None:
+        signal = None
 
-            # LONG EXIT
-            if self.position == "LONG":
+        # ---------------- COOLDOWN ----------------
+        if self.last_trade_time:
+            if (now - self.last_trade_time).seconds < self.cooldown_seconds:
+                return None
 
-                # Trailing SL
-                if price > self.entry_price:
-                    self.stop_loss = max(self.stop_loss, price * 0.85)
+        # ---------------- ENTRY ----------------
+        if self.position is None:
 
-                if price <= self.stop_loss:
-                    logger.printD(f"SL HIT LONG @ {price}")
-                    self.reset()
-                    return "EXIT"
+            if self.prev_ema9 is not None and self.prev_ema21 is not None:
 
-                elif price >= self.target:
-                    logger.printD(f"TARGET HIT LONG @ {price}")
-                    self.reset()
-                    return "EXIT"
+                bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
+                bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
 
-            # SHORT EXIT
-            elif self.position == "SHORT":
+                # LONG ENTRY
+                if bullish_cross and price > vwap:
+                    self.position = "LONG"
+                    self.entry_price = price
 
-                if price < self.entry_price:
-                    self.stop_loss = min(self.stop_loss, price * 1.15)
+                    # Risk management
+                    self.stop_loss = price * 0.8      # 20% SL (options)
+                    self.target = price * 1.4         # 40% target
 
-                if price >= self.stop_loss:
-                    logger.printD(f"SL HIT SHORT @ {price}")
-                    self.reset()
-                    return "EXIT"
+                    self.last_trade_time = now
 
-                elif price <= self.target:
-                    logger.printD(f"TARGET HIT SHORT @ {price}")
-                    self.reset()
-                    return "EXIT"
+                    logger.printD(f"BUY @ {price}")
+                    signal = "BUY"
+
+                # SHORT ENTRY
+                elif bearish_cross and price < vwap:
+                    self.position = "SHORT"
+                    self.entry_price = price
+
+                    self.stop_loss = price * 1.2
+                    self.target = price * 0.6
+
+                    self.last_trade_time = now
+
+                    logger.printD(f"SELL @ {price}")
+                    signal = "SELL"
 
         
 
-        # Store previous EMA
+        # store previous EMA
         self.prev_ema9 = self.ema9
         self.prev_ema21 = self.ema21
-
+        self.reset() 
         return signal
 
     # ---------------------------------------------------
