@@ -62,7 +62,7 @@ class TradeManager:
             symbol = self.get_option_symbol(price, "CE", strike)
             #lp_value = self.get_quotes(search_scrips_token)
             
-            ordNum=self.broker.place_order(
+            ordNum,profitOrLoss=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
                 symbol=symbol
@@ -78,7 +78,7 @@ class TradeManager:
             strike = self.getStrike(price)
             symbol = self.get_option_symbol(price, "PE", strike)
             
-            ordNum=self.broker.place_order(
+            ordNum,profitOrLoss=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
                 symbol=symbol
@@ -88,7 +88,7 @@ class TradeManager:
             self.current_symbol = symbol
             self.risk.new_trade(price)
             #self.position = True
-        return ordNum
+        return ordNum,profitOrLoss
 
     # ---------- Exit Logic ----------
     def manage(self, price, ord_numer):

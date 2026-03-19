@@ -143,7 +143,7 @@ class Order:
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         print(f"Placing {side} order for {qty} units of {symbol}")
         entry_id = self.place_entry(side, symbol, qty)
-        
+        profitOrLoss=None
         if not entry_id:
             return None
         
@@ -179,11 +179,13 @@ class Order:
                 if ltp >= target:
                     print("🎯 Target Hit buy")
                     self.exit_entry(side, symbol, qty)
+                    profitOrLoss= "PROFIT"
                     break
 
                 if ltp <= stop_loss:
                     print("🛑 Stoploss Hit buy")
                     self.exit_entry(side, symbol, qty)
+                    profitOrLoss= "LOSS"
                     break
 
             else:
@@ -192,13 +194,15 @@ class Order:
                 if ltp <= target:
                     print("🎯 Target Hit sell ")
                     self.exit_entry(side, symbol, qty)
+                    profitOrLoss= "PROFIT"
                     break
 
                 if ltp >= stop_loss:
                     print("🛑 Stoploss Hit sell")
                     self.exit_entry(side, symbol, qty)
+                    profitOrLoss= "LOSS"
                     break
 
             time.sleep(1)
         print("==================================================================")
-        return entry_id
+        return entry_id,profitOrLoss

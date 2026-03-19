@@ -65,18 +65,26 @@ def on_tick(price):
     if current_time > cutoff_time and lotIndex==0:
         sys.exit(0)
     
-    if checkTradeActive():
-        logger.printR("⚠️ Trade exited."+ str(ord_numer))
-        isTradeActive = False
-        ord_numer = None
+    #if checkTradeActive():
+    #    logger.printR("⚠️ Trade exited."+ str(ord_numer))
+    #   isTradeActive = False
+    #    ord_numer = None
     
      
     if signal and not isTradeActive and current_time >= time(9, 30):
-        ord_numer=trade.on_signal(signal, price,lotIndex)
+        ord_numer,profitOrLoss=trade.on_signal(signal, price,lotIndex)
+        print("order number: "+ str(ord_numer))
+        print("profit or loss: "+ str(profitOrLoss))
         input("Do want to continue ? ").strip()
         print("index value: "+ str(lotIndex))
+        if profitOrLoss == "PROFIT":
+            lotIndex = 0
+        elif profitOrLoss == "LOSS":
+            lotIndex += 1
+        
         if ord_numer is not None:
-            isTradeActive = True
+            isTradeActive = False
+            ord_numer = None
             
 
 def checkTradeActive():

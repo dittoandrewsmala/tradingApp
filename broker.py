@@ -129,7 +129,8 @@ class Broker:
         symbol = symbol.replace(year_full, year_short)
         order.session_token = self.session 
         # delegate to Order class instance
-        return order.submit_order(side, symbol, lotIndex)
+        orderId,profitOrLoss=order.submit_order(side, symbol, lotIndex)
+        return orderId,profitOrLoss
 
     
 
