@@ -11,9 +11,9 @@ class Order:
 
     def __init__(self, session_token=None):
         self.session_token = session_token
-        self.lotnumbers = [1,1,1,1,2,2,3,4,5,8,11,14,18,23,35]
-        self.target_arr = [2,3,5,8,6,10.3,10.3,12,16,15,15,15,16,18,18]
-        self.stop__loss = [1,1.5,3,5,4,5,5,7,8,5,5,5,8,9,9]
+        self.lotnumbers = [1,1,1,1,2,2,3,4,5,8,11,14,18,30]
+        self.target_arr = [2,3,5,8,6,10.3,10.3,12,16,15,15,15,16,18]
+        self.stop__loss = [1,1.5,3,5,4,5,5,7,8,5,5,5,8,9]
 
     def api(self, url, jdata):
         
@@ -203,6 +203,6 @@ class Order:
                     profitOrLoss= "LOSS"
                     break
 
-            #time.sleep(1)
+            time.sleep(1)
         print("==================================================================")
         return entry_id,profitOrLoss
