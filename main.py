@@ -69,7 +69,7 @@ def on_tick(price):
         logger.printR("⚠️ Trade exited."+ str(ord_numer))
         isTradeActive = False
         ord_numer = None
-    print("Signal: "+ str(signal))
+    
      
     if signal and not isTradeActive and current_time >= time(9, 30):
         ord_numer=trade.on_signal(signal, price,lotIndex)
@@ -83,6 +83,7 @@ def checkTradeActive():
     global start_Price, lotIndex
     current_Price=broker.get_max_payout()
     print("current_Price: "+ str(current_Price))
+    print("start_Price: "+ str(start_Price))
     if current_Price > start_Price:
         start_Price = current_Price
         lotIndex=0
