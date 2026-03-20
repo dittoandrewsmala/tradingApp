@@ -6,70 +6,118 @@ from logger import Logger
 
 logger = Logger()
 
+
 class Order:
-    """Encapsulates API interactions and order functions."""
 
     def __init__(self, session_token=None):
         self.session_token = session_token
+
         self.lotnumbers = [1,1,1,1,2,2,3,4,5,8,11,14,18,30]
         self.target_arr = [2,3,5,8,6,10.3,10.3,12,16,15,15,15,16,18]
         self.stop__loss = [1,1.5,3,5,4,5,5,7,8,5,5,5,8,9]
 
+        self.token_cache = {}
+        self.active_trade = False
+
+    # ---------------- API ---------------- #
+
     def api(self, url, jdata):
-        
-        headers = {
-            "Content-Type": "application/json"
-        }
+        headers = {"Content-Type": "application/json"}
         payload = f"jData={json.dumps(jdata)}&jKey={self.session_token}"
+
         try:
-            res = requests.post(url, headers=headers, data=payload)
+            res = requests.post(url, headers=headers, data=payload, timeout=3)
+            return res.json()
         except Exception as e:
-            logger.printR("❌ Request error while SearchScrip:"+ str(e))
-            raise Exception("Failed to SearchScrip: " + str(e))
-    
-        try:
-            data = res.json()
-        except ValueError:
-            raise Exception("Failed to decode JSON response: " + res.text)
-        
-        return data
-    
-    
-    def get_token_from_tsym(self, data, tsym):
-        for item in data.get("values", []):
-            #print("Checking tsym:", item.get("tsym"))
-            if item.get("tsym") == tsym:
-                return item.get("token")
+            logger.printR(f"❌ API error: {e}")
+            return None
+
+    # ---------------- TOKEN CACHE ---------------- #
+
+    def get_token(self, symbol):
+        if symbol in self.token_cache:
+            return self.token_cache[symbol]
+
+        jdata = {"uid": config.USER_ID, "stext": symbol, "exch": "NFO"}
+        data = self.api(config.SEARCH_SCRIP_URL, jdata)
+
+        if data:
+            for item in data.get("values", []):
+                if item.get("tsym") == symbol:
+                    token = item.get("token")
+                    self.token_cache[symbol] = token
+                    return token
         return None
-   
-    def SearchScrip(self, symbol):
-        jdata = {"uid": config.USER_ID,"stext": symbol, "exch": "NFO" }
-        data= self.api(config.SEARCH_SCRIP_URL, jdata)
-        token = self.get_token_from_tsym(data, symbol)
-        return  token
 
-
+    # ---------------- LTP ---------------- #
 
     def get_ltp(self, symbol):
-        url = config.GET_QUOTES
-        token= self.SearchScrip(symbol)
+        token = self.get_token(symbol)
+        if not token:
+            return None
+
         jdata = {"uid": config.USER_ID, "exch": "NFO", "token": token}
-        data= self.api(config.GET_QUOTES, jdata)      
+        data = self.api(config.GET_QUOTES, jdata)
+
         if data and "lp" in data:
             return float(data["lp"])
         return None
 
+    # ---------------- ORDER ---------------- #
+
+    def place_order(self, order):
+        res = self.api(config.PLACE_ORDER_URL, order)
+        if not res or res.get("stat") != "Ok":
+            logger.printR(f"❌ Order failed: {res}")
+            return None
+        return res.get("norenordno")
+
+    def place_entry(self, side, symbol, qty):
+        order = {
+            "uid": config.USER_ID,
+            "actid": config.USER_ID,
+            "exch": "NFO",
+            "tsym": symbol,
+            "qty": str(qty),
+            "prd": "I",
+            "trantype": side,
+            "prctyp": "MKT",
+            "ret": "DAY"
+        }
+        return self.place_order(order)
+
+    def exit_entry(self, side, symbol, qty):
+        exit_side = "S" if side == "B" else "B"
+
+        order = {
+            "uid": config.USER_ID,
+            "actid": config.USER_ID,
+            "exch": "NFO",
+            "tsym": symbol,
+            "qty": str(qty),
+            "prd": "I",
+            "trantype": exit_side,
+            "prctyp": "MKT",
+            "ret": "DAY"
+        }
+        return self.place_order(order)
+
+    # ---------------- ORDER STATUS ---------------- #
+
     def get_order_status(self, order_id):
         data = {"uid": config.USER_ID}
         res = self.api(config.ORDER_BOOK_URL, data)
+
         if not res:
             return None, None
+
         for order in res:
             if order["norenordno"] == order_id:
-                status = order["status"]
-                price = order.get("avgprc", "0")
-                return status, float(price)
+                return order["status"], float(order.get("avgprc", 0))
+
         return None, None
+
+    # ---------------- MAIN ---------------- #
 
     def wait_for_fill(self, order_id):
         while True:
@@ -85,124 +133,122 @@ class Order:
                 return None
             time.sleep(1)
 
-    def place_order(self, jdata):
-        
-        res = self.api(config.PLACE_ORDER_URL, jdata)
-        if not res or res.get("stat") != "Ok":
-            logger.printR("❌ Order failed: " + str(res))
-            return None
-        return res.get("norenordno")
-
-    def place_entry(self, side, symbol, qty):
-        ltp = self.get_ltp(symbol)
-        if side == "B":
-            price = round(ltp + 0.3, 2)
-        else:
-            price = round(ltp - 0.3, 2)
-        
-        order = {
-            "uid": config.USER_ID,
-            "actid": config.USER_ID,
-            "exch": "NFO",
-            "tsym": symbol,
-            "qty": str(qty),
-            "prd": "I",
-            "trantype": side,
-            "prctyp": "LMT",
-            "prc": str(price),
-            "ret": "DAY"
-        }
-        
-        return self.place_order(order)
-
-    def exit_entry(self, side, symbol, qty):
-        #print(f"Placing sfsf exit order for {qty} units of {symbol}")
-        ltp = self.get_ltp(symbol)
-        if side == "B":
-            exit_side = "S"
-            price = round(ltp - 0.5, 2)
-        else:
-            exit_side = "B"
-            price = round(ltp + 0.5, 2)
-        order = {
-            "uid": config.USER_ID,
-            "actid": config.USER_ID,
-            "exch": "NFO",
-            "tsym": symbol,
-            "qty": str(qty),
-            "prd": "I",
-            "trantype": exit_side,
-            "prctyp": "LMT",
-            "prc": str(price),
-            "ret": "DAY"
-        }
-        #print(f"Placing exit order: {exit_side} {qty} of {symbol} at {price}")
-        return self.place_order(order)
-
     def submit_order(self, side, symbol, lotIndex):
-        qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        print(f"Placing {side} order for {qty} units of {symbol}")
-        entry_id = self.place_entry(side, symbol, qty)
-        profitOrLoss=None
-        if not entry_id:
+
+        if self.active_trade:
+            print("⚠️ Trade already running")
             return None
-        
-        
-        entry_price = self.wait_for_fill(entry_id)
-        if not entry_price:
-            return None
-        
-        if side == "B":
-            target = entry_price + self.target_arr[lotIndex]
-            stop_loss = entry_price - self.stop__loss[lotIndex]
-        else:
-            target = entry_price - self.target_arr[lotIndex]
-            stop_loss = entry_price + self.stop__loss[lotIndex]
-        
-        print("Entry:", entry_price)
-        print(side)
-        print("==================================================================")
-        while True:
-            
-            ltp = self.get_ltp(symbol)
-            print("LTP VALUE checking:", ltp)
+
+        self.active_trade = True
+
+        try:
+            qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
+            print(f"Placing {side} order for {qty} units")
+
+            entry_id = self.place_entry(side, symbol, qty)
+            if not entry_id:
+                return None
+
+            # -------- ENTRY PRICE -------- #
+
+            entry_price = None
+
+            entry_price = self.wait_for_fill(entry_id)
+            if not entry_price:
+                return None
+
+            # -------- TARGET / SL -------- #
+
+            base_target = self.target_arr[lotIndex]
+
+            if side == "B":
+                target = entry_price + base_target
+                stop_loss = entry_price - self.stop__loss[lotIndex]
+            else:
+                target = entry_price - base_target
+                stop_loss = entry_price + self.stop__loss[lotIndex]
+
+            print("Entry:", entry_price)
             print("Target:", target)
             print("SL:", stop_loss)
-            
-            if ltp is None:
+
+            start_time = time.time()
+
+            # -------- MAIN LOOP -------- #
+
+            while True:
+
+                if time.time() - start_time > 300:
+                    print("⏳ Timeout exit")
+                    self.exit_entry(side, symbol, qty)
+                    return entry_id, "TIMEOUT"
+
+                ltp = self.get_ltp(symbol)
+                if ltp is None:
+                    time.sleep(0.5)
+                    continue
+
+                # ---------------- TRAILING LOGIC ---------------- #
+
+                if side == "B":
+
+                    move = ltp - entry_price
+
+                    # Stage 1: Breakeven
+                    if move >= base_target * 0.25:
+                        stop_loss = max(stop_loss, entry_price)
+
+                    # Stage 2: Lock profit
+                    if move >= base_target * 0.5:
+                        stop_loss = max(stop_loss, entry_price + base_target * 0.2)
+
+                    # Stage 3: Strong trend
+                    if move >= base_target * 0.75:
+                        stop_loss = max(stop_loss, entry_price + base_target * 0.4)
+                        target = entry_price + base_target * 1.2
+
+                    # Final trailing
+                    if move >= base_target * 0.9:
+                        stop_loss = max(stop_loss, ltp - self.stop__loss[lotIndex] / 2)
+
+                    if ltp >= target:
+                        print("🎯 Target Hit BUY")
+                        self.exit_entry(side, symbol, qty)
+                        return entry_id, "PROFIT"
+
+                    if ltp <= stop_loss:
+                        print("🛑 Stoploss Hit BUY")
+                        self.exit_entry(side, symbol, qty)
+                        return entry_id, "LOSS"
+
+                else:
+
+                    move = entry_price - ltp
+
+                    if move >= base_target * 0.25:
+                        stop_loss = min(stop_loss, entry_price)
+
+                    if move >= base_target * 0.5:
+                        stop_loss = min(stop_loss, entry_price - base_target * 0.2)
+
+                    if move >= base_target * 0.75:
+                        stop_loss = min(stop_loss, entry_price - base_target * 0.4)
+                        target = entry_price - base_target * 1.2
+
+                    if move >= base_target * 0.9:
+                        stop_loss = min(stop_loss, ltp + self.stop__loss[lotIndex] / 2)
+
+                    if ltp <= target:
+                        print("🎯 Target Hit SELL")
+                        self.exit_entry(side, symbol, qty)
+                        return entry_id, "PROFIT"
+
+                    if ltp >= stop_loss:
+                        print("🛑 Stoploss Hit SELL")
+                        self.exit_entry(side, symbol, qty)
+                        return entry_id, "LOSS"
+
                 time.sleep(0.5)
-                continue
-              
-            if side == "B":
-                
-                  
-                if ltp >= target:
-                    print("🎯 Target Hit buy")
-                    self.exit_entry(side, symbol, qty)
-                    profitOrLoss= "PROFIT"
-                    break
 
-                if ltp <= stop_loss:
-                    print("🛑 Stoploss Hit buy")
-                    self.exit_entry(side, symbol, qty)
-                    profitOrLoss= "LOSS"
-                    break
-
-            else:
-                
-                
-                if ltp <= target:
-                    print("🎯 Target Hit sell ")
-                    self.exit_entry(side, symbol, qty)
-                    profitOrLoss= "PROFIT"
-                    break
-
-                if ltp >= stop_loss:
-                    print("🛑 Stoploss Hit sell")
-                    self.exit_entry(side, symbol, qty)
-                    profitOrLoss= "LOSS"
-                    break
-
-            time.sleep(1)
-        print("==================================================================")
-        return entry_id,profitOrLoss
+        finally:
+            self.active_trade = False
