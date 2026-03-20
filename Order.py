@@ -202,6 +202,7 @@ class Order:
                 # Final trailing
                 if move >= base_target * 0.9:
                     stop_loss = max(stop_loss, ltp - self.stop_loss_arr[lotIndex] / 2)
+                    target = entry_price + base_target * 1.3
 
 
                 
@@ -227,6 +228,7 @@ class Order:
 
                 if move >= base_target * 0.9:
                     stop_loss = min(stop_loss, ltp + self.stop_loss_arr[lotIndex] / 2)
+                    target = entry_price - base_target * 1.3
 
                 if ltp <= target + buffer:
                     print("🎯 Target Hit")
