@@ -192,13 +192,7 @@ class Order:
             if side == "B":
                 move = ltp - entry_price
 
-                # Stage 1: Breakeven
-                if move >= base_target * 0.25:
-                    stop_loss = max(stop_loss, entry_price)
-
-                # Stage 2: Lock profit
-                if move >= base_target * 0.5:
-                    stop_loss = max(stop_loss, entry_price + base_target * 0.2)
+                
 
                 # Stage 3: Strong trend
                 if move >= base_target * 0.75:
@@ -226,18 +220,13 @@ class Order:
             else:
                 move = entry_price - ltp
 
-                if move >= base_target * 0.25:
-                        stop_loss = min(stop_loss, entry_price)
-
-                if move >= base_target * 0.5:
-                    stop_loss = min(stop_loss, entry_price - base_target * 0.2)
-
+               
                 if move >= base_target * 0.75:
                     stop_loss = min(stop_loss, entry_price - base_target * 0.4)
                     target = entry_price - base_target * 1.2
 
                 if move >= base_target * 0.9:
-                    stop_loss = min(stop_loss, ltp + self.stop__loss[lotIndex] / 2)
+                    stop_loss = min(stop_loss, ltp + self.stop_loss_arr[lotIndex] / 2)
 
                 if ltp <= target + buffer:
                     print("🎯 Target Hit")
