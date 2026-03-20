@@ -204,19 +204,18 @@ class Order:
                     stop_loss = max(stop_loss, ltp - self.stop_loss_arr[lotIndex] / 2)
                     target = entry_price + base_target * 1.3
 
+                if ltp >= target - buffer or ltp <= stop_loss:
+                    if ltp >= target - buffer:
+                        print("🎯 Target Hit")
+                    else:
+                        print("🛑 Stoploss Hit")
 
+                    
+                exit_id = self.exit_entry(side, symbol, qty)
+                exit_price = self.wait_for_fill(exit_id)
+                return exit_id, "PROFIT" if ltp >= target - buffer else "LOSS"
                 
-                if ltp >= target - buffer:
-                    print("🎯 Target Hit")
-                    exit_id = self.exit_entry(side, symbol, qty)
-                    exit_price = self.wait_for_fill(exit_id)
-                    return exit_id, "PROFIT"
-
-                if ltp <= stop_loss:
-                    print("🛑 Stoploss Hit")
-                    exit_id = self.exit_entry(side, symbol, qty)
-                    exit_price = self.wait_for_fill(exit_id)
-                    return exit_id, "LOSS"
+                
 
             else:
                 move = entry_price - ltp
@@ -230,16 +229,15 @@ class Order:
                     stop_loss = min(stop_loss, ltp + self.stop_loss_arr[lotIndex] / 2)
                     target = entry_price - base_target * 1.3
 
-                if ltp <= target + buffer:
-                    print("🎯 Target Hit")
-                    exit_id = self.exit_entry(side, symbol, qty)
-                    exit_price = self.wait_for_fill(exit_id)
-                    return exit_id, "PROFIT"
+                if ltp <= target + buffer or ltp >= stop_loss:
 
-                if ltp >= stop_loss:
-                    print("🛑 Stoploss Hit")
-                    exit_id = self.exit_entry(side, symbol, qty)
-                    exit_price = self.wait_for_fill(exit_id)
-                    return exit_id, "LOSS"
+                    if ltp <= target + buffer:
+                        print("🎯 Target Hit")
+                    else:
+                        print("🛑 Stoploss Hit")
 
-            time.sleep(1)
+                exit_id = self.exit_entry(side, symbol, qty)
+                exit_price = self.wait_for_fill(exit_id)
+                return exit_id, "PROFIT" if ltp <= target + buffer else "LOSS"
+
+        time.sleep(1)
