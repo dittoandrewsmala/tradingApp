@@ -75,7 +75,8 @@ def on_tick(price):
         ord_numer,profitOrLoss=trade.on_signal(signal, price,lotIndex)
         print("order number: "+ str(ord_numer))
         print("profit or loss: "+ str(profitOrLoss))
-        input("Do want to continue ? ").strip()
+        if lotIndex!=0 and lotIndex %4 == 0:
+            input("Do want to continue ? ").strip()
         print("index value: "+ str(lotIndex))
         if profitOrLoss == "PROFIT":
             lotIndex = 0
