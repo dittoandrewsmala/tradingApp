@@ -210,7 +210,7 @@ class Order:
                     else:
                         print("🛑 Stoploss Hit")
 
-                    
+                print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss}")    
                 exit_id = self.exit_entry(side, symbol, qty)
                 exit_price = self.wait_for_fill(exit_id)
                 return exit_id, "PROFIT" if ltp >= target - buffer else "LOSS"
@@ -235,7 +235,7 @@ class Order:
                         print("🎯 Target Hit")
                     else:
                         print("🛑 Stoploss Hit")
-
+                print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss}")  
                 exit_id = self.exit_entry(side, symbol, qty)
                 exit_price = self.wait_for_fill(exit_id)
                 return exit_id, "PROFIT" if ltp <= target + buffer else "LOSS"

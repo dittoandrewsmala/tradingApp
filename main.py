@@ -50,14 +50,14 @@ def on_tick(price):
     
     ## receving signal 
     signal = strategy.signal(price)
-    print("signal: "+ str(signal))
+    #print("signal: "+ str(signal))
     
     #isProfitable = position.get_positions(broker.session)
     
     ist = pytz.timezone("Asia/Kolkata")
     current_time = datetime.now(ist).time()
     
-    logger.printR("lot index: "+ str(lotIndex))
+    #logger.printR("lot index: "+ str(lotIndex))
     
     # 2:00 PM time object
     cutoff_time = time(config.CUT_OFF_TIME, 0)
