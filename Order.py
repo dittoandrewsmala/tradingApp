@@ -22,7 +22,7 @@ class Order:
         payload = f"jData={json.dumps(jdata)}&jKey={self.session_token}"
 
         try:
-            res = requests.post(url, headers=headers, data=payload, timeout=5)
+            res = requests.post(url, headers=headers, data=payload, timeout=10)
             data = res.json()
             return data
         except Exception as e:
@@ -51,11 +51,15 @@ class Order:
         if not token:
             return None
 
-        jdata = {"uid": config.USER_ID, "exch": "NFO", "token": token}
-        data = self.api(config.GET_QUOTES, jdata)
+        for attempt in range(3):
+            jdata = {"uid": config.USER_ID, "exch": "NFO", "token": token}
+            data = self.api(config.GET_QUOTES, jdata)
 
-        if data and "lp" in data:
-            return float(data["lp"])
+            if data and "lp" in data:
+                return float(data["lp"])
+
+            time.sleep(1)  # Wait before retry
+
         return None
 
     # ---------------- ORDER STATUS ----------------
@@ -181,11 +185,12 @@ class Order:
 
         # ---------------- TRADE LOOP ----------------
         while True:
+            time.sleep(1)
             ltp = self.get_ltp(symbol)
             print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss}")
 
             if ltp is None:
-                time.sleep(1)
+                print("❌ LTP not available, retrying...")
                 continue
 
             
@@ -225,5 +230,5 @@ class Order:
 
 
         
-        time.sleep(1)
+        
         return entry_id,profitOrLoss
