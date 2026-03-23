@@ -182,62 +182,48 @@ class Order:
         # ---------------- TRADE LOOP ----------------
         while True:
             ltp = self.get_ltp(symbol)
+            print(f"Current LTP: {ltp}")
 
             if ltp is None:
                 time.sleep(1)
                 continue
 
-            buffer = 0.2
+            
 
             if side == "B":
-                move = ltp - entry_price
-
-                
-
-                # Stage 3: Strong trend
-                if move >= base_target * 0.75:
-                    stop_loss = max(stop_loss, entry_price + base_target * 0.4)
-                    target = entry_price + base_target * 1.2
-
-                # Final trailing
-                if move >= base_target * 0.9:
-                    stop_loss = max(stop_loss, ltp - self.stop_loss_arr[lotIndex] / 2)
-                    target = entry_price + base_target * 1.3
-
-                if ltp >= target - buffer or ltp <= stop_loss:
-                    if ltp >= target - buffer:
-                        print("🎯 Target Hit")
-                    else:
-                        print("🛑 Stoploss Hit")
-
-                    print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss}")    
+                if ltp >= target:
+                    print("🎯 Target Hit buy")
                     exit_id = self.exit_entry(side, symbol, qty)
-                    exit_price = self.wait_for_fill(exit_id)
-                    return exit_id, "PROFIT" if ltp >= target - buffer else "LOSS"
+                    self.wait_for_fill(exit_id)
+                    profitOrLoss= "PROFIT"
+                    break
+
+                if ltp <= stop_loss:
+                    print("🛑 Stoploss Hit buy")
+                    exit_id = self.exit_entry(side, symbol, qty)
+                    self.wait_for_fill(exit_id)
+                    profitOrLoss= "LOSS"
+                    break
+                    
                 
                 
 
             else:
-                move = entry_price - ltp
-
-               
-                if move >= base_target * 0.75:
-                    stop_loss = min(stop_loss, entry_price - base_target * 0.4)
-                    target = entry_price - base_target * 1.2
-
-                if move >= base_target * 0.9:
-                    stop_loss = min(stop_loss, ltp + self.stop_loss_arr[lotIndex] / 2)
-                    target = entry_price - base_target * 1.3
-
-                if ltp <= target + buffer or ltp >= stop_loss:
-
-                    if ltp <= target + buffer:
-                        print("🎯 Target Hit")
-                    else:
-                        print("🛑 Stoploss Hit")
-                    print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss}")  
+                if ltp <= target:
+                    print("🎯 Target Hit sell ")
                     exit_id = self.exit_entry(side, symbol, qty)
-                    exit_price = self.wait_for_fill(exit_id)
-                    return exit_id, "PROFIT" if ltp <= target + buffer else "LOSS"
+                    self.wait_for_fill(exit_id)
+                    profitOrLoss= "PROFIT"
+                    break
 
+                if ltp >= stop_loss:
+                    print("🛑 Stoploss Hit sell")
+                    exit_id = self.exit_entry(side, symbol, qty)
+                    self.wait_for_fill(exit_id)
+                    profitOrLoss= "LOSS"
+                    break
+
+
+        
         time.sleep(1)
+        return entry_id,profitOrLoss
