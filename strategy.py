@@ -35,8 +35,8 @@ class Strategy:
         self.cooldown_seconds = 60
 
         # Filters (tune these)
-        self.min_range = 5              # avoid sideways
-        self.trend_threshold = 0.2      # EMA strength
+        self.trend_threshold = 0.05
+        self.min_range = 2
 
     # ---------------------------------------------------
     def signal(self, price, volume=1):
@@ -45,6 +45,7 @@ class Strategy:
         now = datetime.now()
         self.prices.append(price)
 
+        # Ensure enough data
         if len(self.prices) < config.MIN_CANDLES:
             return None
 
@@ -62,7 +63,8 @@ class Strategy:
         vwap = self.total_pv / self.total_volume if self.total_volume else price
 
         # ---------------- RANGE FILTER ----------------
-        if (max(self.prices) - min(self.prices)) < self.min_range:
+        price_range = max(self.prices) - min(self.prices)
+        if price_range < self.min_range:
             return None
 
         # ---------------- COOLDOWN ----------------
@@ -70,43 +72,41 @@ class Strategy:
             if (now - self.last_trade_time).seconds < self.cooldown_seconds:
                 return None
 
+        # ---------------- TREND ----------------
+        bullish = self.ema9 > self.ema21
+        bearish = self.ema9 < self.ema21
+
+        cross_up = self.prev_ema9 <= self.prev_ema21 and bullish
+        cross_down = self.prev_ema9 >= self.prev_ema21 and bearish
+
+        trend_strength = abs(self.ema9 - self.ema21)
+
         signal = None
 
         # ---------------- ENTRY ----------------
         if self.position is None:
 
-            if self.prev_ema9 is not None and self.prev_ema21 is not None:
+            # LONG
+            if ((cross_up or (bullish and trend_strength > self.trend_threshold))
+                and price > vwap):
 
-                bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
-                bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
+                self.position = "LONG"
+                self.last_trade_time = now
 
-                trend_strength = abs(self.ema9 - self.ema21)
+                logger.printD(f"BUY @ {price}")
+                signal = "BUY"
 
-                # LONG ENTRY
-                if (bullish_cross and
-                    price > vwap and
-                    price > self.ema9 and
-                    trend_strength > self.trend_threshold):
+            # SHORT
+            elif ((cross_down or (bearish and trend_strength > self.trend_threshold))
+                  and price < vwap):
 
-                    self.position = "LONG"
-                    self.last_trade_time = now
+                self.position = "SHORT"
+                self.last_trade_time = now
 
-                    logger.printD(f"BUY @ {price}")
-                    signal = "BUY"
+                logger.printD(f"SELL @ {price}")
+                signal = "SELL"
 
-                # SHORT ENTRY
-                elif (bearish_cross and
-                      price < vwap and
-                      price < self.ema9 and
-                      trend_strength > self.trend_threshold):
-
-                    self.position = "SHORT"
-                    self.last_trade_time = now
-
-                    logger.printD(f"SELL @ {price}")
-                    signal = "SELL"
-
-        # store previous EMA
+        # Store previous EMA
         self.prev_ema9 = self.ema9
         self.prev_ema21 = self.ema21
 
@@ -115,5 +115,5 @@ class Strategy:
     # ---------------------------------------------------
     def reset_position(self):
     # ---------------------------------------------------
-        """Call this after your order system exits"""
+        """Call this after your trade exit"""
         self.position = None
