@@ -41,7 +41,7 @@ if not signalStarted:
 
 
 def on_tick(price):
-    global signalStarted, lotIndex, isTradeActive ,ord_numer,
+    global signalStarted, lotIndex, isTradeActive ,ord_numer
     
    
     
