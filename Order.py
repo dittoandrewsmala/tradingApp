@@ -14,7 +14,7 @@ class Order:
 
         self.lotnumbers = [1,1,1,1,2,2,3,4,5,8,12,18,25]
         self.target_arr = [2,3,5,8,6,10.3,10.3,12,16,15,15,16,18]
-        self.stop_loss_arr = [1,1.5,3,5,4,5,5,7,8,5,10,8,9]
+        self.stop_loss_arr = [1,1.5,3,5,4,5,5,7,8,7,10,8,9]
 
     # ---------------- API ----------------
     def api(self, url, jdata):
