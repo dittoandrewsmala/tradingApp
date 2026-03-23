@@ -12,9 +12,9 @@ class Order:
         self.session_token = session_token
         self.token_cache = {}
 
-        self.lotnumbers = [1,1,1,2,2,3,4,6,9,14,20,30]
-        self.target_arr = [2,3,5,6,8,10,12,15,18,15,15,15]
-        self.stop_loss_arr = [1,1.5,2.5,3,4,5,6,7,9,7,9,9]
+        self.lotnumbers = [1,1,1,1,2,2,3,4,5,8,11,14,18,23,35]
+        self.target_arr = [2,3,5,8,6,10.3,10.3,12,16,15,15,15,16,18,18]
+        self.stop__loss = [1,1.5,3,5,4,5,5,7,8,5,5,5,8,9,9]
 
     # ---------------- API ----------------
     def api(self, url, jdata):
