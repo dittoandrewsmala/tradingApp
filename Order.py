@@ -182,7 +182,7 @@ class Order:
         # ---------------- TRADE LOOP ----------------
         while True:
             ltp = self.get_ltp(symbol)
-            print(f"Current LTP: {ltp}")
+            print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss}")
 
             if ltp is None:
                 time.sleep(1)
