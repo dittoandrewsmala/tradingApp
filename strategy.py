@@ -27,18 +27,12 @@ class Strategy:
         self.total_pv = 0
         self.total_volume = 0
 
-        # Position state
-        self.position = None
-        self.entry_price = None
-        self.stop_loss = None
-        self.target = None
-
         # Trade control
         self.last_trade_time = None
         self.cooldown_seconds = 90
 
         # Filters
-        self.min_range = 5              # adjust based on instrument
+        self.min_range = 5              # tune per instrument
         self.trend_threshold = 0.2      # EMA separation strength
 
     # ---------------------------------------------------
@@ -66,92 +60,45 @@ class Strategy:
 
         # ---------------- RANGE FILTER ----------------
         if (max(self.prices) - min(self.prices)) < self.min_range:
-            return None  # skip sideways market
+            return None
 
         # ---------------- COOLDOWN ----------------
         if self.last_trade_time:
             if (now - self.last_trade_time).seconds < self.cooldown_seconds:
                 return None
 
-        # ---------------- EXIT LOGIC ----------------
-        if self.position == "LONG":
-            if price <= self.stop_loss:
-                logger.printD(f"LONG SL HIT @ {price}")
-                self._reset_position()
-                return "EXIT"
-
-            if price >= self.target:
-                logger.printD(f"LONG TARGET HIT @ {price}")
-                self._reset_position()
-                return "EXIT"
-
-        elif self.position == "SHORT":
-            if price >= self.stop_loss:
-                logger.printD(f"SHORT SL HIT @ {price}")
-                self._reset_position()
-                return "EXIT"
-
-            if price <= self.target:
-                logger.printD(f"SHORT TARGET HIT @ {price}")
-                self._reset_position()
-                return "EXIT"
-
-        # ---------------- ENTRY ----------------
         signal = None
 
-        if self.position is None:
+        # ---------------- ENTRY CONDITIONS ----------------
+        if self.prev_ema9 is not None and self.prev_ema21 is not None:
 
-            if self.prev_ema9 is not None and self.prev_ema21 is not None:
+            bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
+            bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
 
-                bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
-                bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
+            trend_strength = abs(self.ema9 - self.ema21)
 
-                trend_strength = abs(self.ema9 - self.ema21)
+            # LONG SIGNAL
+            if (bullish_cross and
+                price > vwap and
+                price > self.ema9 and
+                trend_strength > self.trend_threshold):
 
-                # LONG ENTRY
-                if (bullish_cross and
-                    price > vwap and
-                    price > self.ema9 and
-                    trend_strength > self.trend_threshold):
+                self.last_trade_time = now
+                logger.printD(f"BUY SIGNAL @ {price}")
+                signal = "BUY"
 
-                    self.position = "LONG"
-                    self.entry_price = price
+            # SHORT SIGNAL
+            elif (bearish_cross and
+                  price < vwap and
+                  price < self.ema9 and
+                  trend_strength > self.trend_threshold):
 
-                    self.stop_loss = price * 0.85   # tighter SL
-                    self.target = price * 1.25      # realistic target
-
-                    self.last_trade_time = now
-
-                    logger.printD(f"BUY @ {price}")
-                    signal = "BUY"
-
-                # SHORT ENTRY
-                elif (bearish_cross and
-                      price < vwap and
-                      price < self.ema9 and
-                      trend_strength > self.trend_threshold):
-
-                    self.position = "SHORT"
-                    self.entry_price = price
-
-                    self.stop_loss = price * 1.15
-                    self.target = price * 0.75
-
-                    self.last_trade_time = now
-
-                    logger.printD(f"SELL @ {price}")
-                    signal = "SELL"
+                self.last_trade_time = now
+                logger.printD(f"SELL SIGNAL @ {price}")
+                signal = "SELL"
 
         # store previous EMA
         self.prev_ema9 = self.ema9
         self.prev_ema21 = self.ema21
 
         return signal
-
-    # ---------------------------------------------------
-    def _reset_position(self):
-    # ---------------------------------------------------
-        self.position = None
-        self.entry_price = None
-        self.stop_loss = None
-        self.target = None
