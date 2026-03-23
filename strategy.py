@@ -27,13 +27,16 @@ class Strategy:
         self.total_pv = 0
         self.total_volume = 0
 
+        # Position state
+        self.position = None
+
         # Trade control
         self.last_trade_time = None
-        self.cooldown_seconds = 90
+        self.cooldown_seconds = 60
 
-        # Filters
-        self.min_range = 5              # tune per instrument
-        self.trend_threshold = 0.2      # EMA separation strength
+        # Filters (tune these)
+        self.min_range = 5              # avoid sideways
+        self.trend_threshold = 0.2      # EMA strength
 
     # ---------------------------------------------------
     def signal(self, price, volume=1):
@@ -69,36 +72,48 @@ class Strategy:
 
         signal = None
 
-        # ---------------- ENTRY CONDITIONS ----------------
-        if self.prev_ema9 is not None and self.prev_ema21 is not None:
+        # ---------------- ENTRY ----------------
+        if self.position is None:
 
-            bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
-            bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
+            if self.prev_ema9 is not None and self.prev_ema21 is not None:
 
-            trend_strength = abs(self.ema9 - self.ema21)
+                bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
+                bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
 
-            # LONG SIGNAL
-            if (bullish_cross and
-                price > vwap and
-                price > self.ema9 and
-                trend_strength > self.trend_threshold):
+                trend_strength = abs(self.ema9 - self.ema21)
 
-                self.last_trade_time = now
-                logger.printD(f"BUY SIGNAL @ {price}")
-                signal = "BUY"
+                # LONG ENTRY
+                if (bullish_cross and
+                    price > vwap and
+                    price > self.ema9 and
+                    trend_strength > self.trend_threshold):
 
-            # SHORT SIGNAL
-            elif (bearish_cross and
-                  price < vwap and
-                  price < self.ema9 and
-                  trend_strength > self.trend_threshold):
+                    self.position = "LONG"
+                    self.last_trade_time = now
 
-                self.last_trade_time = now
-                logger.printD(f"SELL SIGNAL @ {price}")
-                signal = "SELL"
+                    logger.printD(f"BUY @ {price}")
+                    signal = "BUY"
+
+                # SHORT ENTRY
+                elif (bearish_cross and
+                      price < vwap and
+                      price < self.ema9 and
+                      trend_strength > self.trend_threshold):
+
+                    self.position = "SHORT"
+                    self.last_trade_time = now
+
+                    logger.printD(f"SELL @ {price}")
+                    signal = "SELL"
 
         # store previous EMA
         self.prev_ema9 = self.ema9
         self.prev_ema21 = self.ema21
 
         return signal
+
+    # ---------------------------------------------------
+    def reset_position(self):
+    # ---------------------------------------------------
+        """Call this after your order system exits"""
+        self.position = None

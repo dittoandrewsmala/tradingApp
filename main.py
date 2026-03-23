@@ -73,6 +73,7 @@ def on_tick(price):
      
     if signal and not isTradeActive and current_time >= time(9, 30):
         ord_numer,profitOrLoss=trade.on_signal(signal, price,lotIndex)
+        strategy.reset_position()
         print("order number: "+ str(ord_numer))
         print("profit or loss: "+ str(profitOrLoss))
         if lotIndex!=0 and lotIndex %4 == 0:
