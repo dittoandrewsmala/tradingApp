@@ -1,9 +1,10 @@
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime
 import config
 from logger import Logger
 
 logger = Logger()
+
 
 class Strategy:
 
@@ -22,7 +23,7 @@ class Strategy:
         self.k9 = 2 / (9 + 1)
         self.k21 = 2 / (21 + 1)
 
-        # VWAP (REAL)
+        # VWAP
         self.total_pv = 0
         self.total_volume = 0
 
@@ -34,14 +35,17 @@ class Strategy:
 
         # Trade control
         self.last_trade_time = None
-        self.cooldown_seconds = 60   # avoid overtrading
+        self.cooldown_seconds = 90
+
+        # Filters
+        self.min_range = 5              # adjust based on instrument
+        self.trend_threshold = 0.2      # EMA separation strength
 
     # ---------------------------------------------------
     def signal(self, price, volume=1):
     # ---------------------------------------------------
 
         now = datetime.now()
-
         self.prices.append(price)
 
         if len(self.prices) < config.MIN_CANDLES:
@@ -55,19 +59,46 @@ class Strategy:
             self.ema9 = (price * self.k9) + (self.ema9 * (1 - self.k9))
             self.ema21 = (price * self.k21) + (self.ema21 * (1 - self.k21))
 
-        # ---------------- REAL VWAP ----------------
+        # ---------------- VWAP ----------------
         self.total_pv += price * volume
         self.total_volume += volume
         vwap = self.total_pv / self.total_volume if self.total_volume else price
 
-        signal = None
+        # ---------------- RANGE FILTER ----------------
+        if (max(self.prices) - min(self.prices)) < self.min_range:
+            return None  # skip sideways market
 
         # ---------------- COOLDOWN ----------------
         if self.last_trade_time:
             if (now - self.last_trade_time).seconds < self.cooldown_seconds:
                 return None
 
+        # ---------------- EXIT LOGIC ----------------
+        if self.position == "LONG":
+            if price <= self.stop_loss:
+                logger.printD(f"LONG SL HIT @ {price}")
+                self._reset_position()
+                return "EXIT"
+
+            if price >= self.target:
+                logger.printD(f"LONG TARGET HIT @ {price}")
+                self._reset_position()
+                return "EXIT"
+
+        elif self.position == "SHORT":
+            if price >= self.stop_loss:
+                logger.printD(f"SHORT SL HIT @ {price}")
+                self._reset_position()
+                return "EXIT"
+
+            if price <= self.target:
+                logger.printD(f"SHORT TARGET HIT @ {price}")
+                self._reset_position()
+                return "EXIT"
+
         # ---------------- ENTRY ----------------
+        signal = None
+
         if self.position is None:
 
             if self.prev_ema9 is not None and self.prev_ema21 is not None:
@@ -75,14 +106,19 @@ class Strategy:
                 bullish_cross = self.prev_ema9 <= self.prev_ema21 and self.ema9 > self.ema21
                 bearish_cross = self.prev_ema9 >= self.prev_ema21 and self.ema9 < self.ema21
 
+                trend_strength = abs(self.ema9 - self.ema21)
+
                 # LONG ENTRY
-                if bullish_cross and price > vwap:
+                if (bullish_cross and
+                    price > vwap and
+                    price > self.ema9 and
+                    trend_strength > self.trend_threshold):
+
                     self.position = "LONG"
                     self.entry_price = price
 
-                    # Risk management
-                    self.stop_loss = price * 0.8      # 20% SL (options)
-                    self.target = price * 1.4         # 40% target
+                    self.stop_loss = price * 0.85   # tighter SL
+                    self.target = price * 1.25      # realistic target
 
                     self.last_trade_time = now
 
@@ -90,31 +126,32 @@ class Strategy:
                     signal = "BUY"
 
                 # SHORT ENTRY
-                elif bearish_cross and price < vwap:
+                elif (bearish_cross and
+                      price < vwap and
+                      price < self.ema9 and
+                      trend_strength > self.trend_threshold):
+
                     self.position = "SHORT"
                     self.entry_price = price
 
-                    self.stop_loss = price * 1.2
-                    self.target = price * 0.6
+                    self.stop_loss = price * 1.15
+                    self.target = price * 0.75
 
                     self.last_trade_time = now
 
                     logger.printD(f"SELL @ {price}")
                     signal = "SELL"
 
-        
-
         # store previous EMA
         self.prev_ema9 = self.ema9
         self.prev_ema21 = self.ema21
-        self.reset() 
+
         return signal
 
     # ---------------------------------------------------
-    def reset(self):
+    def _reset_position(self):
     # ---------------------------------------------------
         self.position = None
         self.entry_price = None
         self.stop_loss = None
         self.target = None
-        self.prices.clear()
