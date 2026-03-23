@@ -12,8 +12,8 @@ class Order:
         self.session_token = session_token
         self.token_cache = {}
 
-        self.lotnumbers = [1,1,1,1,2,2,3,4,5,8,12,18,25]
-        self.target_arr = [2,3,5,8,6,10.3,10.3,12,16,15,15,16,18]
+        self.lotnumbers =    [1,1,1,1,2,2,3,4,5,8,12,18,25]
+        self.target_arr =    [2,3,5,8,6,10.3,10.3,12,16,15,15,16,18]
         self.stop_loss_arr = [1,1.5,3,5,4,5,5,7,8,7,10,8,9]
 
     # ---------------- API ----------------
@@ -182,53 +182,68 @@ class Order:
             stop_loss = entry_price + self.stop_loss_arr[lotIndex]
 
         print(f"Entry: {entry_price} | Target: {target} | SL: {stop_loss}")
+        try:
+            # ---------------- TRADE LOOP ----------------
+            while True:
+                time.sleep(1)
+                ltp = self.get_ltp(symbol)
+                print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss}")
 
-        # ---------------- TRADE LOOP ----------------
-        while True:
-            time.sleep(1)
-            ltp = self.get_ltp(symbol)
-            print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss}")
+                if ltp is None:
+                    print("❌ LTP not available, retrying...")
+                    continue
 
-            if ltp is None:
-                print("❌ LTP not available, retrying...")
-                continue
+                
 
-            
+                if side == "B":
+                    if ltp >= target:
+                        print("🎯 Target Hit buy")
+                        exit_id = self.exit_entry(side, symbol, qty)
+                        self.wait_for_fill(exit_id)
+                        profitOrLoss= "PROFIT"
+                        break
 
-            if side == "B":
-                if ltp >= target:
-                    print("🎯 Target Hit buy")
-                    exit_id = self.exit_entry(side, symbol, qty)
-                    self.wait_for_fill(exit_id)
-                    profitOrLoss= "PROFIT"
-                    break
-
-                if ltp <= stop_loss:
-                    print("🛑 Stoploss Hit buy")
-                    exit_id = self.exit_entry(side, symbol, qty)
-                    self.wait_for_fill(exit_id)
-                    profitOrLoss= "LOSS"
-                    break
+                    if ltp <= stop_loss:
+                        print("🛑 Stoploss Hit buy")
+                        exit_id = self.exit_entry(side, symbol, qty)
+                        self.wait_for_fill(exit_id)
+                        profitOrLoss= "LOSS"
+                        break
+                        
                     
-                
-                
+                    
 
-            else:
-                if ltp <= target:
-                    print("🎯 Target Hit sell ")
-                    exit_id = self.exit_entry(side, symbol, qty)
+                else:
+                    if ltp <= target:
+                        print("🎯 Target Hit sell ")
+                        exit_id = self.exit_entry(side, symbol, qty)
+                        self.wait_for_fill(exit_id)
+                        profitOrLoss= "PROFIT"
+                        break
+
+                    if ltp >= stop_loss:
+                        print("🛑 Stoploss Hit sell")
+                        exit_id = self.exit_entry(side, symbol, qty)
+                        self.wait_for_fill(exit_id)
+                        profitOrLoss= "LOSS"
+                        break
+        except Exception as e:
+            # ---------------- EMERGENCY EXIT ----------------
+            try:
+                print("🚨 Attempting emergency exit...")
+
+                exit_id = self.exit_entry(side, symbol, qty)
+                if exit_id:
                     self.wait_for_fill(exit_id)
-                    profitOrLoss= "PROFIT"
-                    break
+                    print("✅ Emergency exit executed")
 
-                if ltp >= stop_loss:
-                    print("🛑 Stoploss Hit sell")
-                    exit_id = self.exit_entry(side, symbol, qty)
-                    self.wait_for_fill(exit_id)
-                    profitOrLoss= "LOSS"
-                    break
+                profitOrLoss = "ERROR_EXIT"
 
+            except Exception as exit_error:
+                print(f"💀 CRITICAL: Exit also failed: {exit_error}")
+                profitOrLoss = "FAILED_EXIT"
 
-        
-        
-        return entry_id,profitOrLoss
+        finally:
+            print(f"📊 Trade Result: {profitOrLoss}")
+
+        return entry_id, profitOrLoss
