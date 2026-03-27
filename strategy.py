@@ -146,4 +146,5 @@ class Strategy:
         self.total_volume = 0
 
         # ? FIXED (no overwrite bug)
-        self.last_trade_time = datetime.now()
+        self.last_trade_time = datetime.now() 
+        
