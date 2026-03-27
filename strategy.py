@@ -25,10 +25,31 @@ class Strategy:
 
         self.position = None
         self.last_trade_time = None
-        self.cooldown_seconds = 30   # faster reaction
+        self.cooldown_seconds = 30
 
-        self.trend_threshold = 0.02  # reduced
-        self.min_range = 1.5         # reduced
+        self.trend_threshold = 0.02
+        self.min_range = 1.5
+
+    # ---------------------------------------------------
+    # ? CHOPPY MARKET FILTER (NEW)
+    # ---------------------------------------------------
+    def is_choppy(self, price, vwap):
+
+        if len(self.prices) < 20 or self.ema9 is None or self.ema21 is None:
+            return False
+
+        # Tight range (low volatility)
+        range_val = max(self.prices) - min(self.prices)
+        low_range = range_val < price * 0.0015   # 0.15%
+
+        # Weak EMA trend
+        ema_spread = abs(self.ema9 - self.ema21)
+        weak_trend = ema_spread < price * 0.0004
+
+        # Price near VWAP
+        near_vwap = abs(price - vwap) / price < 0.0008
+
+        return low_range and weak_trend and near_vwap
 
     # ---------------------------------------------------
     def signal(self, price, volume=1):
@@ -40,7 +61,7 @@ class Strategy:
         if len(self.prices) < config.MIN_CANDLES:
             return None
 
-        # EMA
+        # ---------------- EMA ----------------
         if self.ema9 is None:
             self.ema9 = price
             self.ema21 = price
@@ -48,20 +69,26 @@ class Strategy:
             self.ema9 = (price * self.k9) + (self.ema9 * (1 - self.k9))
             self.ema21 = (price * self.k21) + (self.ema21 * (1 - self.k21))
 
-        # VWAP
+        # ---------------- VWAP ----------------
         self.total_pv += price * volume
         self.total_volume += volume
         vwap = self.total_pv / self.total_volume if self.total_volume else price
 
-        # Range filter
+        # ---------------- CHOPPY FILTER ----------------
+        if self.is_choppy(price, vwap):
+            logger.printD("CHOPPY - SKIP")
+            return None
+
+        # ---------------- RANGE FILTER ----------------
         if (max(self.prices) - min(self.prices)) < self.min_range:
             return None
 
-        # Cooldown
+        # ---------------- COOLDOWN ----------------
         if self.last_trade_time:
             if (now - self.last_trade_time).seconds < self.cooldown_seconds:
                 return None
 
+        # ---------------- TREND ----------------
         bullish = self.ema9 > self.ema21
         bearish = self.ema9 < self.ema21
 
@@ -76,9 +103,10 @@ class Strategy:
 
         signal = None
 
+        # ---------------- ENTRY ----------------
         if self.position is None:
 
-            # LONG (relaxed VWAP)
+            # LONG
             if (cross_up or (bullish and trend_strength > self.trend_threshold)) and price >= vwap * 0.995:
 
                 self.position = "LONG"
@@ -96,10 +124,26 @@ class Strategy:
                 logger.printD(f"SELL @ {price}")
                 signal = "SELL"
 
+        # Store previous EMA
         self.prev_ema9 = self.ema9
         self.prev_ema21 = self.ema21
 
         return signal
 
+    # ---------------------------------------------------
     def reset_position(self):
+    # ---------------------------------------------------
+
         self.position = None
+        self.prices.clear()
+
+        self.ema9 = None
+        self.ema21 = None
+        self.prev_ema9 = None
+        self.prev_ema21 = None
+
+        self.total_pv = 0
+        self.total_volume = 0
+
+        # ? FIXED (no overwrite bug)
+        self.last_trade_time = datetime.now()

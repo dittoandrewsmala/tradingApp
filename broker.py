@@ -121,12 +121,7 @@ class Broker:
     
     def place_order(self, side, lotIndex,symbol):
 
-               
-        # Find year part
-        year_full = symbol[10:14]   # 2026
-        year_short = year_full[2:]  # 26
-
-        symbol = symbol.replace(year_full, year_short)
+        print(symbol)      
         order.session_token = self.session 
         # delegate to Order class instance
         orderId,profitOrLoss=order.submit_order(side, symbol, lotIndex)

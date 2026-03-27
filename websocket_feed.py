@@ -91,7 +91,7 @@ class MarketFeed:
 
     # ---------- START ----------
     def start(self):
-
+        print("WebSocketAppWebSocketApp ")
         self.ws = websocket.WebSocketApp(
             "wss://piconnect.flattrade.in/PiConnectWSAPI/",
             on_message=self.on_message,
