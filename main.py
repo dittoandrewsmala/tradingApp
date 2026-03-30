@@ -10,7 +10,6 @@ import config
 import sys
 import pytz
 
-
 logger = Logger()
 broker = Broker()
 broker.login()  
