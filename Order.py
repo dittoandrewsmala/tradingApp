@@ -53,7 +53,7 @@ class Order:
         for attempt in range(5):
             jdata = {"uid": config.USER_ID, "exch": "NFO", "token": token}
             data = self.api(config.GET_QUOTES, jdata)
-            print("get_ltp data::",data)
+            
             if data and "lp" in data:
                 return float(data["lp"])
 
