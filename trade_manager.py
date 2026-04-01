@@ -32,7 +32,8 @@ class TradeManager:
 
         next_tuesday = today + timedelta(days=days_ahead)
 
-        expiry = next_tuesday.strftime("%d%b%Y").upper()
+        expiry = next_tuesday.strftime("%d%b%y").upper()
+        
         
         # ATM strike
         atm = round(price / 50) * 50
@@ -65,7 +66,8 @@ class TradeManager:
             ordNum,profitOrLoss=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
-                symbol=symbol
+                symbol=symbol,
+                ltp=price
             )
 
             self.current_symbol = symbol
@@ -81,7 +83,8 @@ class TradeManager:
             ordNum,profitOrLoss=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
-                symbol=symbol
+                symbol=symbol,
+                ltp=price
             )
             
 

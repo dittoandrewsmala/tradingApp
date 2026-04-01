@@ -108,18 +108,7 @@ class Order:
         return res.get("norenordno")
 
     # ---------------- ENTRY ----------------
-    def place_entry(self, side, symbol, qty):
-        ltp = None
-        for _ in range(5):
-            ltp = self.get_ltp(symbol)
-            print("place_entry ltp::",ltp)
-            if ltp:
-                break
-            time.sleep(1)
-
-        if ltp is None:
-            print("❌ LTP not available")
-            return None
+    def place_entry(self, side, symbol, qty, ltp):
 
         price = round(ltp + 0.3, 2) if side == "B" else round(ltp - 0.3, 2)
 
@@ -164,12 +153,12 @@ class Order:
         return self.place_order(order)
 
     # ---------------- MAIN EXECUTION ----------------
-    def submit_order(self, side, symbol, lotIndex):
-
+    def submit_order(self, side, symbol, lotIndex, ltp):
+        
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         print(f"🚀 Placing {side} order for {qty} qty")
 
-        entry_id = self.place_entry(side, symbol, qty)
+        entry_id = self.place_entry(side, symbol, qty,ltp)
         if not entry_id:
             return None, "LOSS"
 
