@@ -125,7 +125,7 @@ class Order:
             "prc": str(price),
             "ret": "DAY"
         }
-
+        print("🚀 Placing order:", order)
         return self.place_order(order)
 
     # ---------------- EXIT ----------------
