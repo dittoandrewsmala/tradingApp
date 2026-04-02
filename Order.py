@@ -194,39 +194,50 @@ class Order:
 
                 if side == "B":
                     if ltp >= target:
-                        print("🎯 Target Hit buy - adjusting targets")
-                        target = ltp + 2
-                        stop_loss = ltp
-                        checkFlag=True
-                        continue
+                        if lotIndex < 4:
+                            print("🎯 Target Hit sell ")
+                            exit_id = self.exit_entry(side, symbol, qty)
+                            self.wait_for_fill(exit_id)
+                            profitOrLoss = "PROFIT"
+                            break
+                        else:
+                            print("🎯 Target Hit sell adjust ")
+                            target = ltp + 2
+                            stop_loss = ltp
+                            checkFlag = True
+                            continue
 
                     if ltp <= stop_loss:
                         print("🛑 Stoploss Hit buy")
                         exit_id = self.exit_entry(side, symbol, qty)
                         self.wait_for_fill(exit_id)
                         profitOrLoss = "LOSS"
-                        if(checkFlag):
-                          profitOrLoss = "PROFIT"  
+                        if checkFlag:
+                            profitOrLoss = "PROFIT"
                         break
-                        
-                    
-                    
 
                 else:
                     if ltp <= target:
-                        print("🎯 Target Hit sell ")
-                        target = ltp - 2
-                        stop_loss = ltp
-                        checkFlag=True
-                        continue
+                        if lotIndex < 4:
+                            print("🎯 Target Hit sell ")
+                            exit_id = self.exit_entry(side, symbol, qty)
+                            self.wait_for_fill(exit_id)
+                            profitOrLoss = "PROFIT"
+                            break
+                        else:
+                            print("🎯 Target Hit sell adjust ")
+                            target = ltp - 2
+                            stop_loss = ltp
+                            checkFlag = True
+                            continue
 
                     if ltp >= stop_loss:
                         print("🛑 Stoploss Hit sell")
                         exit_id = self.exit_entry(side, symbol, qty)
                         self.wait_for_fill(exit_id)
                         profitOrLoss = "LOSS"
-                        if(checkFlag):
-                          profitOrLoss = "PROFIT" 
+                        if checkFlag:
+                            profitOrLoss = "PROFIT"
                         break
         except Exception as e:
             # ---------------- EMERGENCY EXIT ----------------
