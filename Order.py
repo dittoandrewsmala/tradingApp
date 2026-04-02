@@ -125,7 +125,7 @@ class Order:
             "prc": str(price),
             "ret": "DAY"
         }
-        print("🚀 Placing order:", order)
+        
         return self.place_order(order)
 
     # ---------------- EXIT ----------------
@@ -177,7 +177,7 @@ class Order:
             stop_loss = entry_price + self.stop_loss_arr[lotIndex]
 
         print(f"Entry: {entry_price} | Target: {target} | SL: {stop_loss}")
-        checkFlag=None
+        
         
         try:
             # ---------------- TRADE LOOP ----------------
@@ -194,19 +194,17 @@ class Order:
 
                 if side == "B":
                     if ltp >= target:
-                        print("🎯 Target Hit buy - adjusting targets")
-                        target = ltp + 2
-                        stop_loss = ltp
-                        checkFlag=True
-                        continue
+                        print("🎯 Target Hit buy")
+                        exit_id = self.exit_entry(side, symbol, qty)
+                        self.wait_for_fill(exit_id)
+                        profitOrLoss = "PROFIT"
+                        break
 
                     if ltp <= stop_loss:
                         print("🛑 Stoploss Hit buy")
                         exit_id = self.exit_entry(side, symbol, qty)
                         self.wait_for_fill(exit_id)
                         profitOrLoss = "LOSS"
-                        if(checkFlag):
-                          profitOrLoss = "PROFIT"  
                         break
                         
                     
@@ -215,18 +213,16 @@ class Order:
                 else:
                     if ltp <= target:
                         print("🎯 Target Hit sell ")
-                        target = ltp - 2
-                        stop_loss = ltp
-                        checkFlag=True
-                        continue
+                        exit_id = self.exit_entry(side, symbol, qty)
+                        self.wait_for_fill(exit_id)
+                        profitOrLoss = "PROFIT"
+                        break
 
                     if ltp >= stop_loss:
                         print("🛑 Stoploss Hit sell")
                         exit_id = self.exit_entry(side, symbol, qty)
                         self.wait_for_fill(exit_id)
                         profitOrLoss = "LOSS"
-                        if(checkFlag):
-                          profitOrLoss = "PROFIT" 
                         break
         except Exception as e:
             # ---------------- EMERGENCY EXIT ----------------
