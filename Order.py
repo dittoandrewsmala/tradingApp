@@ -82,6 +82,7 @@ class Order:
         start = time.time()
 
         while time.time() - start < timeout:
+            print("⏳ Waiting for order to fill...",order_id)
             status, price = self.get_order_status(order_id)
 
             if status == "COMPLETE":
@@ -100,7 +101,7 @@ class Order:
     # ---------------- PLACE ORDER ----------------
     def place_order(self, jdata):
         res = self.api(config.PLACE_ORDER_URL, jdata)
-
+        print("place order",res)
         if not res or res.get("stat") != "Ok":
             logger.printR(f"❌ Order failed: {res}")
             return None
