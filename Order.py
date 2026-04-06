@@ -12,9 +12,9 @@ class Order:
         self.session_token = session_token
         self.token_cache = {}
 
-        self.lotnumbers =    [1,1,1,1,2,3,7,14,12,18] 
-        self.target_arr =    [.5,1,2,5,5,7,6,6,15,16]   
-        self.stop_loss_arr = [.5,1,2,5,5,7,6,6,10,8]  
+        self.lotnumbers =    [1,1,1,2,3,7,7,12,18] 
+        self.target_arr =    [1,2,5,5,7,6,12,15,16]   
+        self.stop_loss_arr = [1,2,5,5,7,6,12,10,8]  
 
     # ---------------- API ----------------
     def api(self, url, jdata):
@@ -195,20 +195,17 @@ class Order:
                 if side == "B":
                     if ltp >= target:
                         if lotIndex < 4:
-                            print("🎯 Target Hit sell ")
-                            exit_id = self.exit_entry(side, symbol, qty)
-                            self.wait_for_fill(exit_id)
-                            profitOrLoss = "PROFIT"
-                            break
+                            target = ltp + .5
+                            stop_loss = ltp
+                            checkFlag = True
+                            continue
                         else:
-                            print("🎯 Target Hit sell adjust ")
                             target = ltp + 2
                             stop_loss = ltp
                             checkFlag = True
                             continue
 
                     if ltp <= stop_loss:
-                        print("🛑 Stoploss Hit buy")
                         exit_id = self.exit_entry(side, symbol, qty)
                         self.wait_for_fill(exit_id)
                         profitOrLoss = "LOSS"
@@ -219,20 +216,17 @@ class Order:
                 else:
                     if ltp <= target:
                         if lotIndex < 4:
-                            print("🎯 Target Hit sell ")
-                            exit_id = self.exit_entry(side, symbol, qty)
-                            self.wait_for_fill(exit_id)
-                            profitOrLoss = "PROFIT"
-                            break
+                            target = ltp - .5
+                            stop_loss = ltp
+                            checkFlag = True
+                            continue
                         else:
-                            print("🎯 Target Hit sell adjust ")
                             target = ltp - 2
                             stop_loss = ltp
                             checkFlag = True
                             continue
 
                     if ltp >= stop_loss:
-                        print("🛑 Stoploss Hit sell")
                         exit_id = self.exit_entry(side, symbol, qty)
                         self.wait_for_fill(exit_id)
                         profitOrLoss = "LOSS"
