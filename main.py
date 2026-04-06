@@ -70,7 +70,7 @@ def on_tick(price):
         ord_numer,profitOrLoss=trade.on_signal(signal, price,lotIndex)
         strategy.reset_position()
         print("profit or loss: "+ str(profitOrLoss))
-        if lotIndex!=0 and lotIndex %4 == 0:
+        if lotIndex!=0 and lotIndex %4 == 0 and profitOrLoss == "LOSS":
             input("Do want to continue ? ").strip()
         if profitOrLoss == "PROFIT":
             lotIndex = 0
