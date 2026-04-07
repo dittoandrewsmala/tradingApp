@@ -181,13 +181,13 @@ class Order:
 
         print(f"Entry: {entry_price} | Target: {target} | SL: {stop_loss}")
         checkValue=target
-        
+        print(f"origial target : {checkValue}")
         try:
             # ---------------- TRADE LOOP ----------------
             while True:
                 time.sleep(1)
                 ltp = self.get_ltp(symbol)
-                print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss} | index: {lotIndex}")
+                #print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss} | index: {lotIndex}")
 
                 if ltp is None:
                     print("❌ LTP not available, retrying...")
