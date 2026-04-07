@@ -182,7 +182,7 @@ class Order:
         try:
             # ---------------- TRADE LOOP ----------------
             while True:
-                time.sleep(1)
+                #time.sleep(1)
                 ltp = self.get_ltp(symbol)
                 print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss} | index: {lotIndex}")
 
