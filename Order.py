@@ -174,20 +174,22 @@ class Order:
 
         if side == "B":
             target = entry_price + base_target
+            original_target_price = target
             stop_loss = entry_price - self.stop_loss_arr[lotIndex]
         else:
             target = entry_price - base_target
+            original_target_price = target
             stop_loss = entry_price + self.stop_loss_arr[lotIndex]
 
         print(f"Entry: {entry_price} | Target: {target} | SL: {stop_loss}")
-        checkValue=target
-        print(f"origial target : {checkValue}")
+        print(f"original target price : {original_target_price}")
+        
         try:
             # ---------------- TRADE LOOP ----------------
             while True:
                 time.sleep(1)
                 ltp = self.get_ltp(symbol)
-                #print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss} | index: {lotIndex}")
+                print(f"Current LTP: {ltp} | Target: {target} | SL: {stop_loss} | index: {lotIndex}")
 
                 if ltp is None:
                     print("❌ LTP not available, retrying...")
@@ -205,9 +207,9 @@ class Order:
 
                     if ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
-                        self.wait_for_fill(exit_id)
-                        print(f"closing order | LTP: {ltp} | checkValue: {checkValue} ")
-                        if ltp > checkValue:
+                        entry_price = self.wait_for_fill(exit_id)
+                        print(f"closing order | entry_price: {entry_price} | original_target_price: {original_target_price} ")
+                        if entry_price > original_target_price:
                             profitOrLoss = "PROFIT"
                         else:
                             profitOrLoss = "LOSS"
@@ -223,9 +225,9 @@ class Order:
 
                     if ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
-                        self.wait_for_fill(exit_id)
-                        print(f"closing order | LTP: {ltp} | checkValue: {checkValue} ")
-                        if ltp < checkValue:
+                        entry_price = self.wait_for_fill(exit_id)
+                        print(f"closing order | entry_price: {entry_price} | original_target_price: {original_target_price} ")
+                        if entry_price < original_target_price:
                             profitOrLoss = "PROFIT"
                         else:
                             profitOrLoss = "LOSS"
