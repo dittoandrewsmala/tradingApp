@@ -194,16 +194,11 @@ class Order:
 
                 if side == "B":
                     if ltp >= target:
-                        if lotIndex < 4:
-                            target = ltp + .5
-                            stop_loss = ltp
-                            checkFlag = True
-                            continue
-                        else:
-                            target = ltp + 2
-                            stop_loss = ltp
-                            checkFlag = True
-                            continue
+                        target = ltp + 2
+                        stop_loss = ltp
+                        checkFlag = True
+                        print("Adjusting target and stop loss for long position")
+                        continue
 
                     if ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
@@ -215,16 +210,12 @@ class Order:
 
                 else:
                     if ltp <= target:
-                        if lotIndex < 4:
-                            target = ltp - .5
-                            stop_loss = ltp
-                            checkFlag = True
-                            continue
-                        else:
-                            target = ltp - 2
-                            stop_loss = ltp
-                            checkFlag = True
-                            continue
+                        target = ltp - 2
+                        stop_loss = ltp
+                        checkFlag = True
+                        print("Adjusting target and stop loss for short position")
+                        continue
+                            
 
                     if ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
