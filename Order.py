@@ -65,7 +65,10 @@ class Order:
     def get_order_status(self, order_id):
         jdata = {"uid": config.USER_ID}
         res = self.api(config.ORDER_BOOK_URL, jdata)
-
+        if res is None:
+            jdata = {"uid": config.USER_ID, "norenordno": order_id}
+            res = self.api(config.CANCEL_URL, jdata)
+            return "REJECTED", None
         if not res:
             return None, None
 
@@ -177,7 +180,7 @@ class Order:
             stop_loss = entry_price + self.stop_loss_arr[lotIndex]
 
         print(f"Entry: {entry_price} | Target: {target} | SL: {stop_loss}")
-        checkFlag=None
+        checkValue=target
         
         try:
             # ---------------- TRADE LOOP ----------------
@@ -190,40 +193,45 @@ class Order:
                     print("❌ LTP not available, retrying...")
                     continue
 
-                
+                buffer = 0.5
 
                 if side == "B":
+
                     if ltp >= target:
                         target = ltp + 2
-                        stop_loss = ltp
-                        checkFlag = True
+                        stop_loss = ltp - buffer
                         print("Adjusting target and stop loss for long position")
                         continue
 
                     if ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         self.wait_for_fill(exit_id)
-                        profitOrLoss = "LOSS"
-                        if checkFlag:
+                        print(f"closing order | LTP: {ltp} | checkValue: {checkValue} ")
+                        if ltp > checkValue:
                             profitOrLoss = "PROFIT"
+                        else:
+                            profitOrLoss = "LOSS"
                         break
 
                 else:
+
                     if ltp <= target:
                         target = ltp - 2
-                        stop_loss = ltp
-                        checkFlag = True
+                        stop_loss = ltp + buffer
                         print("Adjusting target and stop loss for short position")
                         continue
-                            
 
                     if ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         self.wait_for_fill(exit_id)
-                        profitOrLoss = "LOSS"
-                        if checkFlag:
+                        print(f"closing order | LTP: {ltp} | checkValue: {checkValue} ")
+                        if ltp < checkValue:
                             profitOrLoss = "PROFIT"
+                        else:
+                            profitOrLoss = "LOSS"
                         break
+
+                
         except Exception as e:
             # ---------------- EMERGENCY EXIT ----------------
             try:
