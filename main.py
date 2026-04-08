@@ -64,7 +64,7 @@ def on_tick(price):
     
     
      
-    if signal and not isTradeActive and current_time >= time(9, 30):
+    if  (signal == "BUY" or signal == "SELL") and not isTradeActive and current_time >= time(9, 30):
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
         ord_numer,profitOrLoss=trade.on_signal(signal, price,lotIndex)

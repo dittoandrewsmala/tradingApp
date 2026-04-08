@@ -3,9 +3,10 @@ import json
 import time
 import config
 from logger import Logger
+from strategy import Strategy
 
 logger = Logger()
-
+strategy = Strategy()
 
 class Order:
 
@@ -211,25 +212,28 @@ class Order:
         try:
             while True:
                 time.sleep(1)
+                
                 ltp = self.get_ltp(symbol)
-
+                signal = strategy.signal(ltp)
+                print(f"signal: {signal} | LTP: {ltp}") 
                 print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss}")
 
                 if ltp is None:
                     continue
 
                 buffer = 0.5
+                trail_step = base_target * 0.5
 
                 if side == "B":
 
                     if ltp >= target:
-                        stop_loss = max(stop_loss, ltp - buffer)
+                        stop_loss = max(stop_loss, ltp - trail_step)
                         continue
 
-                    if ltp <= stop_loss:
+                    if signal and "LONG" in signal or ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
-
+                        
                         if exit_price is None:
                             return entry_id, "LOSS"
 
@@ -239,13 +243,13 @@ class Order:
                 else:
 
                     if ltp <= target:
-                        stop_loss = min(stop_loss, ltp + buffer)
+                        stop_loss = min(stop_loss, ltp + trail_step)
                         continue
 
-                    if ltp >= stop_loss:
+                    if signal and "SHORT" in signal or  ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
-
+                        
                         if exit_price is None:
                             return entry_id, "LOSS"
 
