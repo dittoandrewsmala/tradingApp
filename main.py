@@ -72,9 +72,9 @@ def on_tick(price):
         print("profit or loss: "+ str(profitOrLoss))
         if lotIndex!=0 and lotIndex %4 == 0 and profitOrLoss == "LOSS":
             input("Do want to continue ? ").strip()
-        if profitOrLoss == "PROFIT":
+        if profitOrLoss == "PROFIT" and ord_numer is not None:
             lotIndex = 0
-        elif profitOrLoss == "LOSS":
+        elif profitOrLoss == "LOSS" and ord_numer is not None:
             lotIndex += 1
         
         if ord_numer is not None:
