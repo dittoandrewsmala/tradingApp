@@ -233,11 +233,11 @@ class Order:
                     if (signal and "LONG" in signal) or ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
-                        print(f"exit_price: {exit_price} | ORGINAL EXIT: {original_entry_price} ")
+                        print(f"exit_price: {exit_price} | ORGINAL EXIT: {target} ")
                         if exit_price is None:
                             return entry_id, "LOSS"
 
-                        profitOrLoss = "PROFIT" if exit_price > original_entry_price else "LOSS"
+                        profitOrLoss = "PROFIT" if exit_price > target else "LOSS"
                         break
 
                 else:
@@ -250,11 +250,11 @@ class Order:
                     if (signal and "SHORT" in signal) or ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
-                        print(f"exit_price: {exit_price} | ORGINAL EXIT: {original_entry_price} ")
+                        print(f"exit_price: {exit_price} | ORGINAL EXIT: {target} ")
                         if exit_price is None:
                             return entry_id, "LOSS"
 
-                        profitOrLoss = "PROFIT" if exit_price < original_entry_price else "LOSS"
+                        profitOrLoss = "PROFIT" if exit_price < target else "LOSS"
                         break
 
         except Exception as e:
