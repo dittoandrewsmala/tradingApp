@@ -225,11 +225,11 @@ class Order:
 
                 if side == "B":
 
-                    if ltp >= target and lotIndex >1:
+                    if ltp >= target :
                         stop_loss = max(stop_loss, ltp - trail_step)
                         continue
 
-                    if signal and "LONG" in signal or ltp <= stop_loss:
+                    if (signal and "LONG" in signal) or ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
                         
@@ -241,11 +241,11 @@ class Order:
 
                 else:
 
-                    if ltp <= target and lotIndex >1:
+                    if ltp <= target :
                         stop_loss = min(stop_loss, ltp + trail_step)
                         continue
 
-                    if signal and "SHORT" in signal or  ltp >= stop_loss:
+                    if (signal and "SHORT" in signal) or ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
                         
