@@ -215,8 +215,7 @@ class Order:
                 
                 ltp = self.get_ltp(symbol)
                 signal = strategy.signal(ltp)
-                print(f"signal: {signal} | LTP: {ltp}") 
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss}")
+                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} | signal: {signal}")
 
                 if ltp is None:
                     continue
@@ -226,7 +225,7 @@ class Order:
 
                 if side == "B":
 
-                    if ltp >= target:
+                    if ltp >= target and lotIndex >1:
                         stop_loss = max(stop_loss, ltp - trail_step)
                         continue
 
@@ -242,7 +241,7 @@ class Order:
 
                 else:
 
-                    if ltp <= target:
+                    if ltp <= target and lotIndex >1:
                         stop_loss = min(stop_loss, ltp + trail_step)
                         continue
 
