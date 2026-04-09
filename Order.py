@@ -186,9 +186,7 @@ class Order:
     def submit_order(self, side, symbol, lotIndex, ltp):
 
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        # hard coding qty for testing
-        qty=65
-
+        
         print(f"🚀 Placing {side} order for {qty} qty")
 
         entry_id = self.place_entry(side, symbol, qty)
@@ -202,18 +200,13 @@ class Order:
         original_entry_price = entry_price
 
         base_target = self.target_arr[lotIndex]
-        # hard coding target for testing
-        base_target=5
-        
 
         if side == "B":
             target = entry_price + base_target
-            #stop_loss = entry_price - self.stop_loss_arr[lotIndex]
-            stop_loss = entry_price - 5
+            stop_loss = entry_price - self.stop_loss_arr[lotIndex]
         else:
             target = entry_price - base_target
-            #stop_loss = entry_price + self.stop_loss_arr[lotIndex]
-            stop_loss = entry_price + 5
+            stop_loss = entry_price + self.stop_loss_arr[lotIndex]
 
         print(f"Entry: {entry_price} | Target: {target} | SL: {stop_loss}")
 
