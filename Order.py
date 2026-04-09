@@ -186,6 +186,9 @@ class Order:
     def submit_order(self, side, symbol, lotIndex, ltp):
 
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
+        # hard coding qty for testing
+        qty=65
+
         print(f"🚀 Placing {side} order for {qty} qty")
 
         entry_id = self.place_entry(side, symbol, qty)
@@ -199,6 +202,9 @@ class Order:
         original_entry_price = entry_price
 
         base_target = self.target_arr[lotIndex]
+        # hard coding target for testing
+        base_target=5
+        lotIndex=2
 
         if side == "B":
             target = entry_price + base_target
