@@ -204,14 +204,16 @@ class Order:
         base_target = self.target_arr[lotIndex]
         # hard coding target for testing
         base_target=5
-        lotIndex=2
+        
 
         if side == "B":
             target = entry_price + base_target
-            stop_loss = entry_price - self.stop_loss_arr[lotIndex]
+            #stop_loss = entry_price - self.stop_loss_arr[lotIndex]
+            stop_loss = entry_price - 5
         else:
             target = entry_price - base_target
-            stop_loss = entry_price + self.stop_loss_arr[lotIndex]
+            #stop_loss = entry_price + self.stop_loss_arr[lotIndex]
+            stop_loss = entry_price + 5
 
         print(f"Entry: {entry_price} | Target: {target} | SL: {stop_loss}")
 
