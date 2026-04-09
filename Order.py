@@ -215,7 +215,7 @@ class Order:
                 
                 ltp = self.get_ltp(symbol)
                 signal = strategy.signal(ltp)
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} | signal: {signal}")
+                #print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} | signal: {signal}")
 
                 if ltp is None:
                     continue
@@ -227,12 +227,13 @@ class Order:
 
                     if ltp >= target :
                         stop_loss = max(stop_loss, ltp - trail_step)
+                        print(f"NEW SL: {stop_loss}")
                         continue
 
                     if (signal and "LONG" in signal) or ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
-                        
+                        print(f"exit_price: {exit_price} | ORGINAL EXIT: {original_entry_price} ")
                         if exit_price is None:
                             return entry_id, "LOSS"
 
@@ -243,12 +244,13 @@ class Order:
 
                     if ltp <= target :
                         stop_loss = min(stop_loss, ltp + trail_step)
+                        print(f"NEW SL: {stop_loss}")
                         continue
 
                     if (signal and "SHORT" in signal) or ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
-                        
+                        print(f"exit_price: {exit_price} | ORGINAL EXIT: {original_entry_price} ")
                         if exit_price is None:
                             return entry_id, "LOSS"
 
