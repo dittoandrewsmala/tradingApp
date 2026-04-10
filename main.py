@@ -58,8 +58,8 @@ def on_tick(price):
     # 2:00 PM time object
     cutoff_time = time(config.CUT_OFF_TIME, 0)
 
-    if current_time > cutoff_time and lotIndex==0:
-        sys.exit(0)
+    #if current_time > cutoff_time and lotIndex==0:
+        #sys.exit(0)
     
     
     
