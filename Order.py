@@ -192,7 +192,7 @@ class Order:
         
 
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=65
+        qty=65*lotIndex
         print(f"🚀 Placing {side} order for {qty} qty")
 
         entry_id = self.place_entry(side, symbol, qty)
