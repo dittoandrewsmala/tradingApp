@@ -208,7 +208,7 @@ class Order:
             target = entry_price - base_target
             stop_loss = entry_price + self.stop_loss_arr[lotIndex]
 
-        print(f"Entry: {entry_price} | Target: {target} | SL: {stop_loss}")
+        print(f"Entry: {entry_price}")
 
         try:
             while True:
@@ -216,7 +216,7 @@ class Order:
                 
                 ltp = self.get_ltp(symbol)
                 signal = strategy.signal(ltp)
-                #print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} | signal: {signal}")
+                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} | signal: {signal}")
 
                 if ltp is None:
                     continue
@@ -228,34 +228,30 @@ class Order:
 
                     if ltp >= target :
                         stop_loss = max(stop_loss, ltp - trail_step)
-                        print(f"NEW SL: {stop_loss}")
                         continue
 
                     if (signal and "LONG" in signal) or ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
-                        print(f"exit_price: {exit_price} | ORGINAL EXIT: {target} ")
                         if exit_price is None:
                             return entry_id, "LOSS"
-
-                        profitOrLoss = "PROFIT" if exit_price > target else "LOSS"
+                        print(f"exit_price: {exit_price} | entry_price: {entry_price} ")
+                        profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
                         break
 
                 else:
 
                     if ltp <= target :
                         stop_loss = min(stop_loss, ltp + trail_step)
-                        print(f"NEW SL: {stop_loss}")
                         continue
 
                     if (signal and "SHORT" in signal) or ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
-                        print(f"exit_price: {exit_price} | ORGINAL EXIT: {target} ")
                         if exit_price is None:
                             return entry_id, "LOSS"
-
-                        profitOrLoss = "PROFIT" if exit_price < target else "LOSS"
+                        print(f"exit_price: {exit_price} | entry_price: {entry_price} ")
+                        profitOrLoss = "PROFIT" if exit_price < entry_price else "LOSS"
                         break
 
         except Exception as e:
