@@ -13,7 +13,8 @@ class Order:
     def __init__(self, session_token=None):
         self.session_token = session_token
         self.token_cache = {}
-
+        self.total_pnl = 0
+        self.max_loss = -1500
         self.lotnumbers = [1,1,1,2,3,9,12,20]  
         self.target_arr = [1,2,5,5,7,6,9,12]  
         self.stop_loss_arr = [1,2,5,5,7,6,9,12]
@@ -184,6 +185,11 @@ class Order:
 
     # ---------------- MAIN EXECUTION ----------------
     def submit_order(self, side, symbol, lotIndex, ltp):
+        # ✅ BLOCK if max loss already hit
+        if self.total_pnl <= self.max_loss:
+            print("⛔ Trading blocked. Max loss reached.")
+            return None, None
+        
 
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         qty=65
@@ -265,6 +271,17 @@ class Order:
                 self.wait_for_fill(exit_id)
 
             profitOrLoss = "LOSS"
+        # ✅ PnL CALCULATION
+        if side == "B":
+            pnl = (exit_price - entry_price) * qty
+        else:
+            pnl = (entry_price - exit_price) * qty
+
+        self.total_pnl += pnl
+
+        print(f"exit_price: {exit_price} | entry_price: {entry_price}")
+        print(f"💰 Trade PnL: {pnl:.2f}")
+        print(f"📉 Total PnL: {self.total_pnl:.2f}")
 
         print(f"📊 Trade Result: {profitOrLoss}")
         return entry_id, profitOrLoss
