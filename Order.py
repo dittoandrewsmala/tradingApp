@@ -282,6 +282,11 @@ class Order:
         print(f"exit_price: {exit_price} | entry_price: {entry_price}")
         print(f"💰 Trade PnL: {pnl:.2f}")
         print(f"📉 Total PnL: {self.total_pnl:.2f}")
-
+        
+        if self.total_pnl <0:
+            profitOrLoss = "LOSS"
+        else:            
+            profitOrLoss = "PROFIT"
+        
         print(f"📊 Trade Result: {profitOrLoss}")
         return entry_id, profitOrLoss
