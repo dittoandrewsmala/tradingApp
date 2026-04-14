@@ -54,7 +54,7 @@ STOP_LOSS = 5      # Stop loss points
 TARGET = 10        # Target profit points
 TRAIL = 3         # Trailing stop points
 
-EXPIRY="13APR26"
+EXPIRY="21APR26"
 
 
 
