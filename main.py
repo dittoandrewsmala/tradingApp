@@ -77,6 +77,10 @@ def on_tick(price):
         elif profitOrLoss == "LOSS" and ord_numer is not None:
             lotIndex += 1
         
+        choice = input("Do want to give index value ? ").strip()
+        if choice.lower() == "yes":
+            lotIndex = int(input("Enter lot index (0, 1, 2, ...): ").strip())
+            
         if ord_numer is not None:
             isTradeActive = False
             ord_numer = None
