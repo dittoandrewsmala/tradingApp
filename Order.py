@@ -225,7 +225,7 @@ class Order:
                 
                 ltp = self.get_ltp(symbol)
                 signal = strategy.signal(ltp)
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} | signal: {signal}")
+                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} | signal: {signal} |side: {side}")
 
                 if ltp is None:
                     continue
