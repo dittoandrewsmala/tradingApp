@@ -197,11 +197,11 @@ class Order:
 
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
-            return None, "LOSS"
+            return None, None
 
         entry_price = self.wait_for_fill(entry_id)
         if not entry_price:
-            return None, "LOSS"
+            return None, None
 
         original_entry_price = entry_price
 
