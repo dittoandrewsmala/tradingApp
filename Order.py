@@ -156,7 +156,7 @@ class Order:
             "prc": str(price),
             "ret": "DAY"
         }
-
+        print(f"🚀 Placing {side} order for {qty} qty at {price}")
         return self.place_order(order)
 
     # ---------------- EXIT ----------------
@@ -193,7 +193,7 @@ class Order:
 
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         qty=65*(lotIndex+1)
-        print(f"🚀 Placing {side} order for {qty} qty")
+        
 
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
