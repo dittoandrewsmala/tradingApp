@@ -156,7 +156,7 @@ class Order:
             "prc": str(price),
             "ret": "DAY"
         }
-        print(f"🚀 Placing {side} order for {qty} qty at {price}")
+        print(f"🚀 Placing {order}")
         return self.place_order(order)
 
     # ---------------- EXIT ----------------
