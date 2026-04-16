@@ -32,7 +32,7 @@ class TradeManager:
         if option_type == "CE":
             strike = atm + 200
         else:
-            strike = atm - 200
+            strike = atm - 300
         
         if option_type == "CE":
             return f"NIFTY{expiry}C{strike}"

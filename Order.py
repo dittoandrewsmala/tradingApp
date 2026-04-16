@@ -79,7 +79,7 @@ class Order:
     def get_order_status(self, order_id):
         jdata = {"uid": config.USER_ID}
         res = self.api(config.ORDER_BOOK_URL, jdata)
-        print(f"📋 Order book response: {res}")
+        
         if not res:
             return None, None
 
@@ -128,7 +128,7 @@ class Order:
     # ---------------- PLACE ORDER ----------------
     def place_order(self, jdata):
         res = self.api(config.PLACE_ORDER_URL, jdata)
-        print("place order", res)
+        
 
         if not res or res.get("stat") != "Ok":
             logger.printR(f"❌ Order failed: {res}")
@@ -244,7 +244,6 @@ class Order:
                         exit_price = self.wait_for_fill(exit_id)
                         if exit_price is None:
                             return entry_id, "LOSS"
-                        print(f"exit_price: {exit_price} | entry_price: {entry_price} ")
                         profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
                         break
 
@@ -259,7 +258,6 @@ class Order:
                         exit_price = self.wait_for_fill(exit_id)
                         if exit_price is None:
                             return entry_id, "LOSS"
-                        print(f"exit_price: {exit_price} | entry_price: {entry_price} ")
                         profitOrLoss = "PROFIT" if exit_price < entry_price else "LOSS"
                         break
 
