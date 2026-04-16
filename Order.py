@@ -79,7 +79,7 @@ class Order:
     def get_order_status(self, order_id):
         jdata = {"uid": config.USER_ID}
         res = self.api(config.ORDER_BOOK_URL, jdata)
-
+        print(f"📋 Order book response: {res}")
         if not res:
             return None, None
 
