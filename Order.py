@@ -239,7 +239,7 @@ class Order:
                         stop_loss = max(stop_loss, ltp - trail_step)
                         continue
 
-                    if (signal and "LONG" in signal) or (signal and "SELL" in signal) or ltp <= stop_loss:
+                    if (signal and signal in ["EXIT_LONG", "SELL"])  or ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
                         if exit_price is None:
@@ -254,7 +254,7 @@ class Order:
                         stop_loss = min(stop_loss, ltp + trail_step)
                         continue
 
-                    if (signal and "SHORT" in signal) or (signal and "BUY" in signal) or ltp >= stop_loss:
+                    if (signal and signal in ["EXIT_SHORT", "BUY"]) or ltp >= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
                         if exit_price is None:
