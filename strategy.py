@@ -1,196 +1,212 @@
 from collections import deque
 from datetime import datetime
-import config
-from logger import Logger
+import time
+import random
+
+# ================= LOGGER =================
+class Logger:
+    def printD(self, msg):
+         print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
 logger = Logger()
 
+# ================= CONFIG =================
+class Config:
+    MIN_CANDLES = 10
 
+config = Config()
+
+# ================= CANDLE BUILDER =================
+class CandleBuilder:
+
+    def __init__(self, interval_sec=2):
+        self.interval = interval_sec
+        self.current = None
+        self.last_bucket = None
+
+    def update(self, price, volume=1):
+        now = datetime.now()
+        bucket = int(now.timestamp() // self.interval)
+
+        if self.last_bucket is None:
+            self.last_bucket = bucket
+
+        if bucket != self.last_bucket:
+            finished = self.current
+            self.current = None
+            self.last_bucket = bucket
+            return finished
+
+        if self.current is None:
+            self.current = {
+                "open": price,
+                "high": price,
+                "low": price,
+                "close": price,
+                "volume": volume
+            }
+        else:
+            self.current["high"] = max(self.current["high"], price)
+            self.current["low"] = min(self.current["low"], price)
+            self.current["close"] = price
+            self.current["volume"] += volume
+
+        return None
+
+# ================= STRATEGY =================
 class Strategy:
 
     def __init__(self):
 
-        # ---------------- PRICE DATA ----------------
         self.prices = deque(maxlen=200)
 
-        # ---------------- EMA ----------------
         self.ema9 = None
         self.ema21 = None
-        self.prev_ema9 = None
-        self.prev_ema21 = None
 
         self.k9 = 2 / (9 + 1)
         self.k21 = 2 / (21 + 1)
 
-        # ---------------- VWAP ----------------
         self.total_pv = 0
         self.total_volume = 0
 
-        # ---------------- POSITION ----------------
         self.position = None
         self.entry_price = None
+        self.target = None
+        self.stoploss = None
+
         self.last_trade_time = None
 
-        # ---------------- CONFIG ----------------
-        self.cooldown_seconds = 30
-        self.max_hold_seconds = 300   # 5 min timeout
+        self.cooldown_seconds = 3
+        self.max_hold_seconds = 40
 
-        self.min_range = 1.5
+        self.min_range = 0.05
 
-    # ---------------------------------------------------
-    # CHOPPY MARKET FILTER
-    # ---------------------------------------------------
-    def is_choppy(self, price, vwap):
+        self.trades = []
+        self.pnl = 0
 
-        if len(self.prices) < 20 or self.ema9 is None or self.ema21 is None:
-            return False
+    # ================= SCENARIO =================
+    def detect_scenario(self, price, vwap):
+        recent = list(self.prices)[-5:]
+        recent_high = max(recent)
+        recent_low = min(recent)
 
-        range_val = max(self.prices) - min(self.prices)
-        low_range = range_val < price * 0.0015   # 0.15%
+        bullish = self.ema9 > self.ema21
+        bearish = self.ema9 < self.ema21
 
-        ema_spread = abs(self.ema9 - self.ema21)
-        weak_trend = ema_spread < price * 0.0004
+        breakout = price >= recent_high
+        breakdown = price <= recent_low
 
-        near_vwap = abs(price - vwap) / price < 0.0008
+        momentum = price - recent[0]
 
-        return low_range and weak_trend and near_vwap
+        if bullish and price > vwap and breakout and momentum > 0:
+            return "BULLISH_BREAKOUT", recent_high, recent_low
 
-    # ---------------------------------------------------
-    def signal(self, price, volume=1):
-    # ---------------------------------------------------
+        elif bearish and price < vwap and breakdown and momentum < 0:
+            return "BEARISH_BREAKDOWN", recent_high, recent_low
+
+        else:
+            return "NO_TRADE", recent_high, recent_low
+
+    # ================= MAIN =================
+    def on_candle(self, candle):
 
         now = datetime.now()
+        price = candle["close"]
+        volume = candle["volume"]
+
         self.prices.append(price)
 
         if len(self.prices) < config.MIN_CANDLES:
             return None
 
-        # ---------------- EMA UPDATE ----------------
+        # EMA
         if self.ema9 is None:
             self.ema9 = price
             self.ema21 = price
         else:
-            self.ema9 = (price * self.k9) + (self.ema9 * (1 - self.k9))
-            self.ema21 = (price * self.k21) + (self.ema21 * (1 - self.k21))
+            self.ema9 = price * self.k9 + self.ema9 * (1 - self.k9)
+            self.ema21 = price * self.k21 + self.ema21 * (1 - self.k21)
 
-        # ---------------- VWAP ----------------
+        # VWAP
         self.total_pv += price * volume
         self.total_volume += volume
-        vwap = self.total_pv / self.total_volume if self.total_volume else price
+        vwap = self.total_pv / self.total_volume
 
-        # =====================================================
-        # 🔴 EXIT LOGIC (ALWAYS FIRST)
-        # =====================================================
-        if self.position is not None:
+        logger.printD(f"P={price:.2f} EMA9={self.ema9:.2f} EMA21={self.ema21:.2f} VWAP={vwap:.2f}")
 
-            exit_signal = None
+        # # EXIT LOGIC
+        # if self.position:
+        #     if self.position == "BUY":
+        #         if price >= self.target:
+        #             return self.exit(price, "TARGET HIT")
+        #         if price <= self.stoploss:
+        #             return self.exit(price, "STOPLOSS HIT")
 
-            # ---------- TREND REVERSAL ----------
-            if self.position == "LONG" and self.ema9 < self.ema21:
-                exit_signal = "EXIT_LONG"
+        #     elif self.position == "SELL":
+        #         if price <= self.target:
+        #             return self.exit(price, "TARGET HIT")
+        #         if price >= self.stoploss:
+        #             return self.exit(price, "STOPLOSS HIT")
 
-            elif self.position == "SHORT" and self.ema9 > self.ema21:
-                exit_signal = "EXIT_SHORT"
+        #     if (now - self.last_trade_time).seconds > self.max_hold_seconds:
+        #         return self.exit(price, "TIME EXIT")
 
-            # ---------- VWAP EXIT ----------
-            elif self.position == "LONG" and price < vwap:
-                exit_signal = "EXIT_LONG"
-
-            elif self.position == "SHORT" and price > vwap:
-                exit_signal = "EXIT_SHORT"
-
-            # ---------- STOP LOSS (0.5%) ----------
-            elif self.position == "LONG" and price < self.entry_price * 0.995:
-                exit_signal = "SL_LONG"
-
-            elif self.position == "SHORT" and price > self.entry_price * 1.005:
-                exit_signal = "SL_SHORT"
-
-            # ---------- TIME EXIT ----------
-            elif (now - self.last_trade_time).seconds > self.max_hold_seconds:
-                exit_signal = f"TIME_EXIT_{self.position}"
-
-            if exit_signal:
-                logger.printD(f"{exit_signal} @ {price}")
-                self.reset_position()
-                return exit_signal
-
-        # ---------------- CHOPPY FILTER ----------------
-        if self.is_choppy(price, vwap):
-            logger.printD("CHOPPY - SKIP")
+        # FILTERS
+        if self.last_trade_time and (now - self.last_trade_time).seconds < self.cooldown_seconds:
             return None
 
-        # ---------------- RANGE FILTER ----------------
-        if (max(self.prices) - min(self.prices)) < self.min_range:
-            return None
+        # SCENARIO
+        scenario, high, low = self.detect_scenario(price, vwap)
+        logger.printD(f"SCENARIO → {scenario}")
 
-        # ---------------- COOLDOWN ----------------
-        if self.last_trade_time:
-            if (now - self.last_trade_time).seconds < self.cooldown_seconds:
-                return None
-
-        # ---------------- TREND ----------------
-        bullish = self.ema9 > self.ema21
-        bearish = self.ema9 < self.ema21
-
-        cross_up = False
-        cross_down = False
-
-        if self.prev_ema9 is not None and self.prev_ema21 is not None:
-            cross_up = self.prev_ema9 <= self.prev_ema21 and bullish
-            cross_down = self.prev_ema9 >= self.prev_ema21 and bearish
-
-        trend_strength = abs(self.ema9 - self.ema21)
-
-        signal = None
-
-        # =====================================================
-        # 🟢 ENTRY LOGIC
-        # =====================================================
         if self.position is None:
 
-            # LONG ENTRY
-            if (cross_up or (bullish and trend_strength > price * 0.0005)) and price >= vwap * 0.995:
+            if scenario == "BULLISH_BREAKOUT":
+                return  str(price)+"BUY"
 
-                self.position = "LONG"
-                self.entry_price = price
-                self.last_trade_time = now
+            elif scenario == "BEARISH_BREAKDOWN":
+                return str(price)+"SELL"
 
-                logger.printD(f"BUY @ {price}")
-                signal = "BUY"
+            else:
+                logger.printD(f"⛔ NO TRADE ZONE {low}-{high}")
 
-            # SHORT ENTRY
-            elif (cross_down or (bearish and trend_strength > price * 0.0005)) and price <= vwap * 1.005:
+        return None
 
-                self.position = "SHORT"
-                self.entry_price = price
-                self.last_trade_time = now
+    def enter(self, price, side):
+        self.position = side
+        self.entry_price = price
+        self.last_trade_time = datetime.now()
 
-                logger.printD(f"SELL @ {price}")
-                signal = "SELL"
+        if side == "BUY":
+            self.target = price + 0.20
+            self.stoploss = price - 0.10
+        else:
+            self.target = price - 0.20
+            self.stoploss = price + 0.10
 
-        # ---------------- STORE PREV EMA ----------------
-        self.prev_ema9 = self.ema9
-        self.prev_ema21 = self.ema21
+        logger.printD(f"🚀 {side} @ {price} | T={self.target} SL={self.stoploss}")
+        return side
 
-        return signal
+    def exit(self, price, reason):
+        pnl = price - self.entry_price if self.position == "BUY" else self.entry_price - price
+        self.pnl += pnl
+        self.trades.append(pnl)
 
-    # ---------------------------------------------------
-    def reset_position(self):
-    # ---------------------------------------------------
+        logger.printD(f"❌ {reason} @ {price} | PnL={pnl:.2f} | Total={self.pnl:.2f}")
 
         self.position = None
         self.entry_price = None
-
-        self.prices.clear()
-
-        self.ema9 = None
-        self.ema21 = None
-        self.prev_ema9 = None
-        self.prev_ema21 = None
-
-        self.total_pv = 0
-        self.total_volume = 0
-
-        # cooldown control
+        self.target = None
+        self.stoploss = None
         self.last_trade_time = datetime.now()
+
+        return reason
+
+    def reset_position(self):
+        self.position = None
+        self.entry_price = None
+        self.target = None
+        self.stoploss = None
+        self.last_trade_time = None
+        logger.printD("🔄 Position reset")
+

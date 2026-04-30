@@ -1,5 +1,5 @@
 from broker import Broker
-from strategy import Strategy
+from strategy import Strategy,CandleBuilder
 from risk_manager import RiskManager
 from trade_manager import TradeManager
 from websocket_feed import MarketFeed
@@ -10,9 +10,11 @@ import config
 import sys
 import pytz
 
+        
+
 logger = Logger()
 broker = Broker()
-broker.login()  
+broker.login1()  
 position = Position()
 nifty_token =broker.get_nifty_token()
 
@@ -26,7 +28,7 @@ lotIndex = 0
 signalStarted = False
 ord_numer = None
 
-
+builder = CandleBuilder(60)
 
 ## initalize signal generation and max payout check
 
@@ -40,13 +42,15 @@ if not signalStarted:
 
 
 def on_tick(price):
-    global signalStarted, lotIndex, isTradeActive ,ord_numer
-    
-   
-    
+    global signalStarted, lotIndex, isTradeActive ,ord_numer,signal
+    signal=None
+    candle = builder.update(price)
+    if candle:
+        signal = strategy.on_candle(candle)
+        
     ## receving signal 
-    signal = strategy.signal(price)
-    #print("signal: "+ str(signal))
+    
+    
     
     #isProfitable = position.get_positions(broker.session)
     
@@ -64,10 +68,14 @@ def on_tick(price):
     
     
      
-    if  (signal == "BUY" or signal == "SELL") and not isTradeActive and current_time >= time(9, 30):
+    if  signal !=None and ("BUY" in signal or "SELL" in signal) and not isTradeActive and current_time >= time(9, 30):
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
-        ord_numer,profitOrLoss=trade.on_signal(signal, price,lotIndex)
+        if "BUY" in signal:
+            condition = "BUY"
+        elif "SELL" in signal:
+            condition = "SELL"
+        ord_numer,profitOrLoss=trade.on_signal(condition, price,lotIndex)
         strategy.reset_position()
         print("profit or loss: "+ str(profitOrLoss))
         #if lotIndex!=0 and lotIndex %4 == 0 and profitOrLoss == "LOSS":

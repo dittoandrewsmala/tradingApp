@@ -185,6 +185,8 @@ class Order:
 
     # ---------------- MAIN EXECUTION ----------------
     def submit_order(self, side, symbol, lotIndex, ltp):
+        
+        
         # ✅ BLOCK if max loss already hit
         if self.total_pnl <= self.max_loss:
             print("⛔ Trading blocked. Max loss reached.")
@@ -203,19 +205,15 @@ class Order:
         if not entry_price:
             return None, None
 
-        original_entry_price = entry_price
 
         base_target = self.target_arr[lotIndex]
         base_target=5
 
-        if side == "B":
-            target = entry_price + base_target
-            #stop_loss = entry_price - self.stop_loss_arr[lotIndex]
-            stop_loss = entry_price - 5
-        else:
-            target = entry_price - base_target
-            #stop_loss = entry_price + self.stop_loss_arr[lotIndex]
-            stop_loss = entry_price + 5
+        
+        target = entry_price + base_target
+           
+        stop_loss = entry_price - 5
+       
 
         print(f"Entry: {entry_price}")
 
@@ -232,34 +230,15 @@ class Order:
 
                 buffer = 0.5
                 trail_step = base_target * 0.5
-
-                if side == "B":
-
-                    if ltp >= target :
+                if ltp >= target :
                         stop_loss = max(stop_loss, ltp - trail_step)
                         continue
-
-                    if (signal and signal in ["EXIT_LONG", "SELL"])  or ltp <= stop_loss:
+                elif ltp <= target :
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
                         if exit_price is None:
                             return entry_id, "LOSS"
                         profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
-                        break
-
-                else:
-
-                    if ltp <= target :
-                        stop_loss = min(stop_loss, ltp + trail_step)
-                        continue
-
-                    if (signal and signal in ["EXIT_SHORT", "BUY"]) or ltp >= stop_loss:
-                        exit_id = self.exit_entry(side, symbol, qty)
-                        exit_price = self.wait_for_fill(exit_id)
-                        if exit_price is None:
-                            return entry_id, "LOSS"
-                        profitOrLoss = "PROFIT" if exit_price < entry_price else "LOSS"
-                        break
 
         except Exception as e:
             print("🚨 Emergency exit:", e)
@@ -270,10 +249,7 @@ class Order:
 
             profitOrLoss = "LOSS"
         # ✅ PnL CALCULATION
-        if side == "B":
-            pnl = (exit_price - entry_price) * qty
-        else:
-            pnl = (entry_price - exit_price) * qty
+        pnl = (exit_price - entry_price) * qty
 
         self.total_pnl += pnl
 
