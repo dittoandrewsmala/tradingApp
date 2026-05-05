@@ -214,7 +214,7 @@ class Order:
            
         stop_loss = entry_price - 5
        
-
+        exit_price = None
         print(f"Entry: {entry_price}")
 
         try:
@@ -222,8 +222,7 @@ class Order:
                 time.sleep(1)
                 
                 ltp = self.get_ltp(symbol)
-                signal = strategy.signal(ltp)
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} | signal: {signal} |side: {side}")
+                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} |side: {side}")
 
                 if ltp is None:
                     continue
