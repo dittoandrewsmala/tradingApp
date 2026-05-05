@@ -40,9 +40,9 @@ class TradeManager:
         atm = round(price / 50) * 50
         # choose far OTM strike
         if option_type == "CE":
-            strike = atm + 200
+            strike = atm + 100
         else:
-            strike = atm - 300
+            strike = atm - 100
         
         if option_type == "CE":
             return f"NIFTY{expiry}C{strike}"
