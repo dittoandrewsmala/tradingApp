@@ -232,7 +232,7 @@ class Order:
                 if ltp >= target :
                         stop_loss = max(stop_loss, ltp - trail_step)
                         continue
-                elif ltp <= target :
+                elif ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
                         if exit_price is None:
