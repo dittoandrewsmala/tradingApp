@@ -1,5 +1,4 @@
 import requests
-from xgboost import data
 from Order import Order
 import config
 import hashlib
