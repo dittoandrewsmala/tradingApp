@@ -238,6 +238,7 @@ class Order:
                         if exit_price is None:
                             return entry_id, "LOSS"
                         profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
+                        break
 
         except Exception as e:
             print("🚨 Emergency exit:", e)
