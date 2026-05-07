@@ -231,6 +231,7 @@ class Order:
                 trail_step = base_target * 0.5
                 if ltp >= target :
                         stop_loss = max(stop_loss, ltp - trail_step)
+                        target=target+5
                         continue
                 elif ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
@@ -242,12 +243,11 @@ class Order:
 
         except Exception as e:
             print("🚨 Emergency exit:", e)
-
             exit_id = self.exit_entry(side, symbol, qty)
             if exit_id:
                 self.wait_for_fill(exit_id)
-
             profitOrLoss = "LOSS"
+        
         # ✅ PnL CALCULATION
         pnl = (exit_price - entry_price) * qty
 
