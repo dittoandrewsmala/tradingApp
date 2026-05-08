@@ -215,6 +215,7 @@ class Order:
         stop_loss = entry_price - 5
        
         exit_price = None
+        check_Flag = True   
         print(f"Entry: {entry_price}")
 
         try:
@@ -229,6 +230,10 @@ class Order:
 
                 buffer = 0.5
                 trail_step = base_target * 0.5
+                if ltp > entry_price+2.5 and check_Flag:
+                    stop_loss = entry_price+2
+                    check_Flag = False
+                    continue
                 if ltp >= target :
                         stop_loss = max(stop_loss, ltp - trail_step)
                         target=target+5
