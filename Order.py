@@ -223,7 +223,7 @@ class Order:
                 time.sleep(1)
                 
                 ltp = self.get_ltp(symbol)
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} |side: {side}")
+                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} |mid value: {entry_price+2.5}")
 
                 if ltp is None:
                     continue
@@ -254,6 +254,7 @@ class Order:
             profitOrLoss = "LOSS"
         
         # ✅ PnL CALCULATION
+        pnl=0
         pnl = (exit_price - entry_price) * qty
         pnl=pnl-20
 
