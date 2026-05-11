@@ -193,7 +193,7 @@ class Order:
             return None, None
         
 
-        qty = self.lotnumbers[lotIndex] * config.LOT_SIZE*3
+        #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         qty=65*(lotIndex+1)
         
 
@@ -215,7 +215,6 @@ class Order:
         stop_loss = entry_price - 5
        
         exit_price = None
-        check_Flag = True   
         print(f"Entry: {entry_price}")
 
         try:
@@ -230,14 +229,10 @@ class Order:
 
                 buffer = 0.5
                 trail_step = base_target * 0.5
-                if ltp > entry_price+2 and check_Flag:
-                    stop_loss = entry_price+1.5
-                    check_Flag = False
+                if ltp > target-3:
+                    stop_loss = target-3.5
+                    target= target+3
                     continue
-                if ltp >= target :
-                        stop_loss = max(stop_loss, ltp - trail_step)
-                        target=target+5
-                        continue
                 elif ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
