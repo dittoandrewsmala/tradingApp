@@ -193,7 +193,7 @@ class Order:
             return None, None
         
 
-        qty = self.lotnumbers[lotIndex] * config.LOT_SIZE*2
+        qty = self.lotnumbers[lotIndex] * config.LOT_SIZE*3
         qty=65*(lotIndex+1)
         
 
