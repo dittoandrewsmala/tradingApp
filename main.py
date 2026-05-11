@@ -68,7 +68,7 @@ def on_tick(price):
     
     
      
-    if  signal !=None and ("BUY" in signal ) and not isTradeActive and current_time >= time(9, 30):
+    if  signal !=None and ("BUY" in signal or "SELL" in signal) and not isTradeActive and current_time >= time(9, 30):
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
         if "BUY" in signal:
@@ -85,9 +85,6 @@ def on_tick(price):
         elif profitOrLoss == "LOSS" and ord_numer is not None:
             lotIndex += 1
         
-        choice = input("Do want to give index value ? ").strip()
-        if choice.lower() == "yes":
-            lotIndex = int(input("Enter lot index (0, 1, 2, ...): ").strip())
             
         if ord_numer is not None:
             isTradeActive = False

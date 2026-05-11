@@ -263,7 +263,7 @@ class Order:
         print(f"💰 Trade PnL: {pnl:.2f}")
         print(f"📉 Total PnL: {self.total_pnl:.2f}")
         
-        if self.total_pnl <0:
+        if self.total_pnl <-300:
             profitOrLoss = "LOSS"
         else:            
             profitOrLoss = "PROFIT"
