@@ -193,7 +193,7 @@ class Order:
             return None, None
         
 
-        qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
+        qty = self.lotnumbers[lotIndex] * config.LOT_SIZE*2
         qty=65*(lotIndex+1)
         
 
@@ -230,8 +230,8 @@ class Order:
 
                 buffer = 0.5
                 trail_step = base_target * 0.5
-                if ltp > entry_price+2.5 and check_Flag:
-                    stop_loss = entry_price+2
+                if ltp > entry_price+2 and check_Flag:
+                    stop_loss = entry_price+1.5
                     check_Flag = False
                     continue
                 if ltp >= target :
