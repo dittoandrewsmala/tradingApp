@@ -255,6 +255,7 @@ class Order:
         
         # ✅ PnL CALCULATION
         pnl = (exit_price - entry_price) * qty
+        pnl=pnl-20
 
         self.total_pnl += pnl
 
