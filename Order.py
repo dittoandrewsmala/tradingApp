@@ -230,7 +230,7 @@ class Order:
                 buffer = 0.5
                 trail_step = base_target * 0.5
                 if ltp > target-3.5:
-                    stop_loss = ltp
+                    stop_loss = target-4
                     target= target+3
                     continue
                 elif ltp <= stop_loss:
