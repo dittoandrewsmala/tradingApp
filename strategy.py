@@ -208,5 +208,6 @@ class Strategy:
         self.target = None
         self.stoploss = None
         self.last_trade_time = None
+        self.prices = None
         logger.printD("🔄 Position reset")
 

@@ -194,7 +194,7 @@ class Order:
         
 
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=65*(lotIndex+1)
+        qty=65*(lotIndex+1)*2
         
 
         entry_id = self.place_entry(side, symbol, qty)
@@ -229,8 +229,8 @@ class Order:
 
                 buffer = 0.5
                 trail_step = base_target * 0.5
-                if ltp > target-3:
-                    stop_loss = target-3.5
+                if ltp > target-3.5:
+                    stop_loss = ltp
                     target= target+3
                     continue
                 elif ltp <= stop_loss:
