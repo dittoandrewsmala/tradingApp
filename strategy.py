@@ -208,6 +208,6 @@ class Strategy:
         self.target = None
         self.stoploss = None
         self.last_trade_time = None
-        self.prices = None
+        self.prices = deque(maxlen=200)
         logger.printD("🔄 Position reset")
 
