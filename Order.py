@@ -222,7 +222,7 @@ class Order:
                 time.sleep(1)
                 
                 ltp = self.get_ltp(symbol)
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} |mid value: {entry_price+2.5}")
+                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} |mid value: {target-3.5}")
 
                 if ltp is None:
                     continue
