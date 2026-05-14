@@ -58,7 +58,7 @@ class Strategy:
 
     def __init__(self):
 
-        self.prices = deque(maxlen=100)
+        self.prices = deque(maxlen=50)
 
         self.ema9 = None
         self.ema21 = None
@@ -208,6 +208,6 @@ class Strategy:
         self.target = None
         self.stoploss = None
         self.last_trade_time = None
-        self.prices = deque(maxlen=100)
+        self.prices = deque(maxlen=50)
         logger.printD("🔄 Position reset")
 
