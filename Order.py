@@ -14,7 +14,7 @@ class Order:
         self.session_token = session_token
         self.token_cache = {}
         self.total_pnl = 0
-        self.max_loss = -1500
+        self.max_loss = -1000
         self.lotnumbers = [1,1,1,2,3,9,12,20]  
         self.target_arr = [1,2,5,5,7,6,9,12]  
         self.stop_loss_arr = [1,2,5,5,7,6,9,12]
