@@ -194,7 +194,7 @@ class Order:
         
 
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=65*(lotIndex+1)*2
+        qty=65*5
         
 
         entry_id = self.place_entry(side, symbol, qty)
@@ -207,12 +207,12 @@ class Order:
 
 
         base_target = self.target_arr[lotIndex]
-        base_target=5
+        base_target=1
 
         
-        target = entry_price + base_target
+        target = entry_price + 1
            
-        stop_loss = entry_price - 2
+        stop_loss = entry_price - 1
        
         exit_price = None
         print(f"Entry: {entry_price}")
@@ -227,11 +227,10 @@ class Order:
                 if ltp is None:
                     continue
 
-                buffer = 0.5
-                trail_step = base_target * 0.5
-                if ltp > target-3.5:
-                    stop_loss = target-4
-                    target= target+3
+                
+                if ltp > target:
+                    stop_loss = target-.5
+                    target= target+1
                     continue
                 elif ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
