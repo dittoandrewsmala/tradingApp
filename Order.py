@@ -212,7 +212,7 @@ class Order:
         
         target = entry_price + 1
            
-        stop_loss = entry_price - 1
+        stop_loss = entry_price - 2
        
         exit_price = None
         print(f"Entry: {entry_price}")
