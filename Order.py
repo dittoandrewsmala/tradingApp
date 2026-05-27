@@ -194,7 +194,7 @@ class Order:
         
 
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=65*5
+        qty=520
         
 
         entry_id = self.place_entry(side, symbol, qty)
@@ -212,7 +212,7 @@ class Order:
         
         target = entry_price + 1
            
-        stop_loss = entry_price - 1
+        stop_loss = entry_price - 5
        
         exit_price = None
         print(f"Entry: {entry_price}")
