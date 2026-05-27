@@ -166,7 +166,7 @@ class Order:
             return None
 
         exit_side = "S" if side == "B" else "B"
-        price = round(ltp - 0.5, 2) if side == "B" else round(ltp + 0.5, 2)
+        price = ltp
 
         order = {
             "uid": config.USER_ID,
@@ -250,7 +250,7 @@ class Order:
         # ✅ PnL CALCULATION
         pnl=0
         pnl = (exit_price - entry_price) * qty
-        pnl=pnl-20
+        pnl=pnl-100
 
         self.total_pnl += pnl
 
@@ -258,10 +258,7 @@ class Order:
         print(f"💰 Trade PnL: {pnl:.2f}")
         print(f"📉 Total PnL: {self.total_pnl:.2f}")
         
-        if self.total_pnl <-300:
-            profitOrLoss = "LOSS"
-        else:            
-            profitOrLoss = "PROFIT"
+        
         
         print(f"📊 Trade Result: {profitOrLoss}")
         return entry_id, profitOrLoss
