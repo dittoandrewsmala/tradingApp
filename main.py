@@ -9,9 +9,7 @@ from logger import Logger
 import config
 import sys
 import pytz
-import winsound
-        
-winsound.Beep(1200, 3000)
+
 logger = Logger()
 broker = Broker()
 broker.login()  
