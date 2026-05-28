@@ -9,9 +9,9 @@ from logger import Logger
 import config
 import sys
 import pytz
-
+import winsound
         
-
+winsound.Beep(1200, 3000)
 logger = Logger()
 broker = Broker()
 broker.login()  
@@ -77,6 +77,7 @@ def on_tick(price):
             condition = "SELL"
         ord_numer,profitOrLoss=trade.on_signal(condition, price,lotIndex)
         print("profit or loss: "+ str(profitOrLoss))
+        strategy.reset_position()
         if profitOrLoss == "LOSS":
             input("Do want to continue ? ").strip()
         
