@@ -68,7 +68,7 @@ def on_tick(price):
     
     
      
-    if  signal !=None and ("BUY" in signal or "SELL" in signal) and not isTradeActive and current_time >= time(9, 30):
+    if  signal !=None and ("SELL" in signal) and not isTradeActive and current_time >= time(9, 30):
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
         if "BUY" in signal:
@@ -76,14 +76,10 @@ def on_tick(price):
         elif "SELL" in signal:
             condition = "SELL"
         ord_numer,profitOrLoss=trade.on_signal(condition, price,lotIndex)
-        strategy.reset_position()
         print("profit or loss: "+ str(profitOrLoss))
-        #if lotIndex!=0 and lotIndex %4 == 0 and profitOrLoss == "LOSS":
-            #input("Do want to continue ? ").strip()
-        if profitOrLoss == "PROFIT" and ord_numer is not None:
-            lotIndex = 0
-        elif profitOrLoss == "LOSS" and ord_numer is not None:
-            lotIndex += 1
+        if profitOrLoss == "LOSS":
+            input("Do want to continue ? ").strip()
+        
         
             
         if ord_numer is not None:
