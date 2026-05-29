@@ -210,7 +210,7 @@ class Order:
         base_target=1
 
         
-        target = entry_price + 1
+        target = entry_price + 2
            
         stop_loss = entry_price - 5
        
@@ -228,9 +228,9 @@ class Order:
                     continue
 
                 
-                if ltp > target:
-                    stop_loss = target-.5
-                    target= target+1
+                if ltp > target-1:
+                    stop_loss = target-1
+                    target= target+3
                     continue
                 elif ltp <= stop_loss:
                         exit_id = self.exit_entry(side, symbol, qty)
