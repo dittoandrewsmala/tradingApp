@@ -82,7 +82,7 @@ class TradeManager:
             symbol = self.get_option_symbol(price, "PE", strike)
             
             ordNum,profitOrLoss=self.broker.place_order(
-                side="S",
+                side="B",
                 lotIndex=lotIndex,
                 symbol=symbol,
                 ltp=price

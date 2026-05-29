@@ -165,7 +165,7 @@ class Order:
         if ltp is None:
             return None
 
-        exit_side = "S" if side == "B" else "B"
+        exit_side = "S"
         price = ltp
 
         order = {
