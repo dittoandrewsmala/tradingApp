@@ -41,6 +41,17 @@ class Order:
         res = self.api(config.CANCEL_URL, jdata)
         print(f"⚠️ Cancel response for {order_id}: {res}")
         return res
+    # ---------------- CANCEL ORDER ----------------
+    def single_order_details(self, order_id):
+        jdata = {
+            "uid": config.USER_ID,
+            "norenordno": order_id
+        }
+        print(f"⚠️ Single order details for {order_id}")
+        res = self.api(config.SINGLE_ORDER_URL, jdata)
+        print(f"⚠️ Single order details for {order_id}: {res}")
+        avgprc = res[0].get("avgprc")
+        return res, avgprc
 
     # ---------------- TOKEN CACHE ----------------
     def get_token(self, symbol):
@@ -195,7 +206,7 @@ class Order:
 
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         qty=520
-        
+        sellPrice=None
 
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
@@ -233,32 +244,30 @@ class Order:
                     target= target+3
                     continue
                 elif ltp <= stop_loss:
-                        exit_id = self.exit_entry(side, symbol, qty)
-                        exit_price = self.wait_for_fill(exit_id)
-                        if exit_price is None:
-                            return entry_id, "LOSS"
-                        profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
+                        self.cancel_order(entry_id)
+                        sellPrice =self.single_order_details(entry_id)
                         break
 
         except Exception as e:
             print("🚨 Emergency exit:", e)
-            exit_id = self.exit_entry(side, symbol, qty)
-            if exit_id:
-                self.wait_for_fill(exit_id)
-            profitOrLoss = "LOSS"
+            self.cancel_order(entry_id)
+            sellPrice =self.single_order_details(entry_id)
         
         # ✅ PnL CALCULATION
         pnl=0
-        pnl = (exit_price - entry_price) * qty
+        pnl = (sellPrice - entry_price* qty) 
         pnl=pnl-100
 
         self.total_pnl += pnl
 
-        print(f"exit_price: {exit_price} | entry_price: {entry_price}")
+        
         print(f"💰 Trade PnL: {pnl:.2f}")
         print(f"📉 Total PnL: {self.total_pnl:.2f}")
         
-        
+        if pnl < 0:
+             profitOrLoss="LOSS"
+        else:             
+            profitOrLoss="PROFIT"
         
         print(f"📊 Trade Result: {profitOrLoss}")
         return entry_id, profitOrLoss

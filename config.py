@@ -26,6 +26,9 @@ PLACE_ORDER_URL = "https://piconnect.flattrade.in/PiConnectAPI/PlaceOrder"
 
 ORDER_BOOK_URL = "https://piconnect.flattrade.in/PiConnectAPI/OrderBook"
 
+SINGLE_ORDER_URL = "https://piconnect.flattrade.in/PiConnectAPI/SingleOrdHist"
+
+
 SEGMENT="NIFTY 50"
 EXCHANGE_NSE = "NSE"
 EXC_NFO = "NFO"
