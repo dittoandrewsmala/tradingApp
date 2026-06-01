@@ -52,9 +52,11 @@ class Order:
         print(f"⚠️ Single order details for {order_id}: {res}")
         if res and isinstance(res, list) and len(res) > 0:
             avgprc = float(res[0].get("avgprc", 0))
+            prc = float(res[0].get("prc", 0))
         else:
             avgprc = 0
-        return avgprc
+            prc = 0
+        return avgprc,prc
 
     # ---------------- TOKEN CACHE ----------------
     def get_token(self, symbol):
@@ -226,7 +228,7 @@ class Order:
         
         target = entry_price + 2
            
-        stop_loss = entry_price - 5
+        stop_loss = entry_price - 2
        
         exit_price = None
         print(f"Entry: {entry_price}")
@@ -236,7 +238,7 @@ class Order:
                 time.sleep(1)
                 
                 ltp = self.get_ltp(symbol)
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} |mid value: {target-3.5}")
+                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} |mid value: {target-1}")
 
                 if ltp is None:
                     continue
@@ -244,18 +246,24 @@ class Order:
                 
                 if ltp > target-1:
                     stop_loss = target-1
-                    target= target+3
+                    target= target+2
                     continue
                 elif ltp <= stop_loss:
                         self.cancel_order(entry_id)
-                        exit_price = self.single_order_details(entry_id)
+                        time.sleep(1)
+                        status, price = self.get_order_status(entry_id)
+                        print(f"📊 Trade Status: {status}")
+                        exit_price,entry_price = self.single_order_details(entry_id)
                         break
 
         except Exception as e:
             print("🚨 Emergency exit:", e)
             self.cancel_order(entry_id)
-            exit_price = self.single_order_details(entry_id)
-        
+            time.sleep(1)
+            status, price = self.get_order_status(entry_id)
+            print(f"📊 Trade Status: {status}")
+            exit_price,entry_price = self.single_order_details(entry_id)
+
         # ✅ PnL CALCULATION
         pnl = 0
         if exit_price is not None and exit_price > 0:
