@@ -245,7 +245,7 @@ class Order:
 
                 
                 if ltp > target-1:
-                    stop_loss = target-1
+                    stop_loss = target-.5
                     target= target+2
                     continue
                 elif ltp <= stop_loss:
