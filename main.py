@@ -26,7 +26,7 @@ lotIndex = 0
 signalStarted = False
 ord_numer = None
 
-builder = CandleBuilder(60)
+builder = CandleBuilder(30)
 
 ## initalize signal generation and max payout check
 
