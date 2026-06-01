@@ -249,20 +249,20 @@ class Order:
                     target= target+2
                     continue
                 elif ltp <= stop_loss:
-                        self.cancel_order(entry_id)
-                        time.sleep(1)
-                        status, price = self.get_order_status(entry_id)
-                        print(f"📊 Trade Status: {status}")
-                        exit_price,entry_price = self.single_order_details(entry_id)
+                        exit_id = self.exit_entry(side, symbol, qty)
+                        exit_price = self.wait_for_fill(exit_id)
+                        if exit_price is None:
+                            return entry_id, "LOSS"
+                        profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
                         break
 
         except Exception as e:
-            print("🚨 Emergency exit:", e)
-            self.cancel_order(entry_id)
-            time.sleep(1)
-            status, price = self.get_order_status(entry_id)
-            print(f"📊 Trade Status: {status}")
-            exit_price,entry_price = self.single_order_details(entry_id)
+                        exit_id = self.exit_entry(side, symbol, qty)
+                        exit_price = self.wait_for_fill(exit_id)
+                        if exit_price is None:
+                            return entry_id, "LOSS"
+                        profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
+                      
 
         # ✅ PnL CALCULATION
         pnl = 0
