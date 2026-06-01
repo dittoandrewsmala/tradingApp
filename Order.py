@@ -50,8 +50,11 @@ class Order:
         print(f"⚠️ Single order details for {order_id}")
         res = self.api(config.SINGLE_ORDER_URL, jdata)
         print(f"⚠️ Single order details for {order_id}: {res}")
-        avgprc = res[0].get("avgprc")
-        return res, avgprc
+        if res and isinstance(res, list) and len(res) > 0:
+            avgprc = float(res[0].get("avgprc", 0))
+        else:
+            avgprc = 0
+        return avgprc
 
     # ---------------- TOKEN CACHE ----------------
     def get_token(self, symbol):
@@ -245,29 +248,32 @@ class Order:
                     continue
                 elif ltp <= stop_loss:
                         self.cancel_order(entry_id)
-                        sellPrice =self.single_order_details(entry_id)
+                        exit_price = self.single_order_details(entry_id)
                         break
 
         except Exception as e:
             print("🚨 Emergency exit:", e)
             self.cancel_order(entry_id)
-            sellPrice =self.single_order_details(entry_id)
+            exit_price = self.single_order_details(entry_id)
         
         # ✅ PnL CALCULATION
-        pnl=0
-        pnl = (sellPrice - entry_price* qty) 
-        pnl=pnl-100
+        pnl = 0
+        if exit_price is not None and exit_price > 0:
+            pnl = (exit_price - entry_price) * qty - 100
+        else:
+            pnl = -100
 
         self.total_pnl += pnl
 
         
+        print(f"Exit price: {exit_price} | Entry price: {entry_price}")
         print(f"💰 Trade PnL: {pnl:.2f}")
         print(f"📉 Total PnL: {self.total_pnl:.2f}")
         
         if pnl < 0:
-             profitOrLoss="LOSS"
+             profitOrLoss = "LOSS"
         else:             
-            profitOrLoss="PROFIT"
+            profitOrLoss = "PROFIT"
         
         print(f"📊 Trade Result: {profitOrLoss}")
         return entry_id, profitOrLoss
