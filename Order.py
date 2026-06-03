@@ -210,7 +210,7 @@ class Order:
         
 
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=520
+        qty=65
         sellPrice=None
 
         entry_id = self.place_entry(side, symbol, qty)
@@ -226,39 +226,47 @@ class Order:
         base_target=1
 
         
-        target = entry_price + 2
+        target = entry_price + 10
            
-        stop_loss = entry_price -.75
+        stop_loss = entry_price -5
        
         exit_price = None
-        print(f"Entry: {entry_price}")
+        
 
         try:
             while True:
                 time.sleep(1)
                 
                 ltp = self.get_ltp(symbol)
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss} |mid value: {target-1}")
+                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss}")
 
                 if ltp is None:
                     continue
 
                 
-                if ltp > target-1:
-                    stop_loss = target-.5
-                    target= target+2
+                if ltp > target-5:
+                    stop_loss = stop_loss+3
+                    target= target+5
                     continue
                 elif ltp <= stop_loss:
-                        exit_id = self.exit_entry(side, symbol, qty)
-                        exit_price = self.wait_for_fill(exit_id)
+                        for attempt in range(10):
+                            exit_id = self.exit_entry(side, symbol, qty)
+                            exit_price = self.wait_for_fill(exit_id)
+                            attempt=attempt+1
+                            if exit_price is not None:
+                                break
                         if exit_price is None:
                             return entry_id, "LOSS"
                         profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
                         break
 
         except Exception as e:
-                        exit_id = self.exit_entry(side, symbol, qty)
-                        exit_price = self.wait_for_fill(exit_id)
+                        for attempt in range(10):
+                            exit_id = self.exit_entry(side, symbol, qty)
+                            exit_price = self.wait_for_fill(exit_id)
+                            attempt=attempt+1
+                            if exit_price is not None:
+                                break
                         if exit_price is None:
                             return entry_id, "LOSS"
                         profitOrLoss = "PROFIT" if exit_price > entry_price else "LOSS"
