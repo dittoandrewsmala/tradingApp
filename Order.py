@@ -108,7 +108,7 @@ class Order:
         return None, None
 
     # ---------------- WAIT FOR FILL ----------------
-    def wait_for_fill(self, order_id, timeout=100):
+    def wait_for_fill(self, order_id, timeout=30):
         start = time.time()
 
         while time.time() - start < timeout:
@@ -183,7 +183,7 @@ class Order:
 
         exit_side = "S"
         price = ltp
-
+        price = round(ltp - 0.5, 2)
         order = {
             "uid": config.USER_ID,
             "actid": config.USER_ID,

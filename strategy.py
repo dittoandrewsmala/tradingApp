@@ -5,7 +5,8 @@ from datetime import datetime
 
 class Logger:
     def printD(self, msg):
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
+        msg = f"[{datetime.now().strftime('%H:%M:%S')}] {msg}"
+        #print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
 logger = Logger()
 
