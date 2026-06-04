@@ -226,9 +226,9 @@ class Order:
         base_target=1
 
         
-        target = entry_price + 10
+        target = entry_price + 5
            
-        stop_loss = entry_price -5
+        stop_loss = entry_price -2
        
         exit_price = None
         
@@ -244,9 +244,9 @@ class Order:
                     continue
 
                 
-                if ltp > target-5:
+                if ltp > target-3:
                     stop_loss = stop_loss+3
-                    target= target+5
+                    target= target+3
                     continue
                 elif ltp <= stop_loss:
                         for attempt in range(10):
