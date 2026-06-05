@@ -1,5 +1,6 @@
 from collections import deque
 from datetime import datetime
+import os
 
 # ================= LOGGER =================
 
@@ -27,7 +28,9 @@ class CandleBuilder:
         self.last_bucket = None
 
     def update(self, price, volume=1):
-
+        logger.printD(
+        f"CURRENT PRICE={price} "
+        )
         now = datetime.now()
         bucket = int(now.timestamp() // self.interval)
 
@@ -47,8 +50,8 @@ class CandleBuilder:
             }
 
             self.last_bucket = bucket
-
-            return finished
+            if finished:
+              return finished
 
         if self.current is None:
 
@@ -104,7 +107,7 @@ class Strategy:
 
         self.last_trade_time = None
 
-        self.cooldown_seconds = 60
+        self.cooldown_seconds = 30
 
         self.trades = []
         self.pnl = 0
@@ -160,12 +163,21 @@ class Strategy:
         f"DISTANCE_TO_HIGH={recent_high-price:.2f} "
         f"DISTANCE_TO_LOW={price-recent_low:.2f}"
         )
+        ema_gap = abs(self.ema9 - self.ema21)
 
-        bullish = self.ema9 >= self.ema21
-        bearish = self.ema9 <= self.ema21
+        bullish = (
+        self.ema9 > self.ema21 and
+        ema_gap >(price * 0.0001)
+        )
 
-        breakout = price >= (recent_high + 0.5)
-        breakdown = price <= (recent_low - 0.5)
+        bearish = (
+        self.ema9 < self.ema21 and
+        ema_gap > (price * 0.0001)
+        )
+        
+
+        breakout = price >= (recent_high + 1)
+        breakdown = price <= (recent_low - 1)
 
         momentum = price - recent[0]
 
@@ -175,7 +187,7 @@ class Strategy:
             else volume
         )
 
-        volume_ok = volume >= (avg_volume * 0.90)
+        volume_ok = volume >= (avg_volume *  1.2)
 
         logger.printD(
             f"High={recent_high:.2f} "
@@ -199,12 +211,12 @@ class Strategy:
 
         rsi_buy_ok = (
             self.rsi is not None and
-            self.rsi > 55
+            self.rsi > 60
         )
 
         rsi_sell_ok = (
             self.rsi is not None and
-            self.rsi < 45
+            20 < self.rsi < 45
         )
         reasons = []
 
