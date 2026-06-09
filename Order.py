@@ -210,7 +210,7 @@ class Order:
         
 
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=65
+        qty=65*lotIndex
         sellPrice=None
 
         entry_id = self.place_entry(side, symbol, qty)
@@ -226,7 +226,7 @@ class Order:
         base_target=1
 
         
-        target = entry_price + 5
+        target = entry_price + 3
            
         stop_loss = entry_price -2
        
@@ -244,9 +244,9 @@ class Order:
                     continue
 
                 
-                if ltp > target-3:
-                    stop_loss = stop_loss+3
-                    target= target+3
+                if ltp > target-1.5:
+                    stop_loss = stop_loss+1.5
+                    target= target+2
                     continue
                 elif ltp <= stop_loss:
                         for attempt in range(10):
@@ -275,9 +275,9 @@ class Order:
         # ✅ PnL CALCULATION
         pnl = 0
         if exit_price is not None and exit_price > 0:
-            pnl = (exit_price - entry_price) * qty - 100
+            pnl = (exit_price - entry_price) * qty - 20
         else:
-            pnl = -100
+            pnl = -20
 
         self.total_pnl += pnl
 

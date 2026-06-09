@@ -1,5 +1,5 @@
 from broker import Broker
-from strategy import Strategy,CandleBuilder
+from strategy import HighWinRateStrategy
 from risk_manager import RiskManager
 from trade_manager import TradeManager
 from websocket_feed import MarketFeed
@@ -18,7 +18,7 @@ nifty_token =broker.get_nifty_token()
 
 
 
-strategy = Strategy()
+strategy = HighWinRateStrategy()
 risk = RiskManager()
 trade = TradeManager(broker, risk)
 isTradeActive = False
@@ -26,7 +26,7 @@ lotIndex = 0
 signalStarted = False
 ord_numer = None
 
-builder = CandleBuilder(30)
+
 
 ## initalize signal generation and max payout check
 
@@ -42,9 +42,8 @@ if not signalStarted:
 def on_tick(price):
     global signalStarted, lotIndex, isTradeActive ,ord_numer,signal
     signal=None
-    candle = builder.update(price)
-    if candle:
-        signal = strategy.on_candle(candle)
+    signal=strategy.on_candle(price, datetime.now(pytz.timezone("Asia/Kolkata")))
+    
         
     ## receving signal 
     
@@ -74,7 +73,11 @@ def on_tick(price):
         elif "SELL" in signal:
             condition = "SELL"
         ord_numer,profitOrLoss=trade.on_signal(condition, price,lotIndex)
-        print("profit or loss: "+ str(profitOrLoss))
+        if profitOrLoss == "PROFIT":
+             lotIndex=0
+        elif profitOrLoss == "LOSS":
+             lotIndex=lotIndex+1
+
         strategy.reset_position()
         
         
