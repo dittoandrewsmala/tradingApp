@@ -1,7 +1,7 @@
 from collections import deque
 import numpy as np
 
-class HighWinRateStrategy:
+class strategy:
     def __init__(self):
         self.prices = deque(maxlen=100)
         self.volumes = deque(maxlen=30)
@@ -206,3 +206,10 @@ class HighWinRateStrategy:
         self.stoploss = None
         self.last_trade_time = current_time
         return reason
+    def reset_position(self):
+        self.position = None
+        self.entry_price = None
+        self.target = None
+        self.stoploss = None
+        self.highest_price_since_entry = None
+        self.lowest_price_since_entry = None

@@ -3,10 +3,10 @@ import json
 import time
 import config
 from logger import Logger
-from strategy import Strategy
+from strategy import strategy
 
 logger = Logger()
-strategy = Strategy()
+strategy = strategy()
 
 class Order:
 

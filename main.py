@@ -1,5 +1,5 @@
 from broker import Broker
-from strategy import HighWinRateStrategy
+from strategy import strategy
 from risk_manager import RiskManager
 from trade_manager import TradeManager
 from websocket_feed import MarketFeed
@@ -18,7 +18,7 @@ nifty_token =broker.get_nifty_token()
 
 
 
-strategy = HighWinRateStrategy()
+strategy = strategy()
 risk = RiskManager()
 trade = TradeManager(broker, risk)
 isTradeActive = False
