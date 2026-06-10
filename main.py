@@ -44,8 +44,7 @@ def on_tick(price):
     signal=None
     candle = builder.update(price)
     if candle:
-        signal = strategy.on_candle(candle)
-        signal=strategy.on_candle(price, datetime.now(pytz.timezone("Asia/Kolkata")))
+        signal=strategy.on_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
     
         
     ## receving signal 
