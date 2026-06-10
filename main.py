@@ -1,5 +1,5 @@
 from broker import Broker
-from strategy import strategy
+from strategy import strategy,CandleBuilder
 from risk_manager import RiskManager
 from trade_manager import TradeManager
 from websocket_feed import MarketFeed
@@ -17,7 +17,7 @@ position = Position()
 nifty_token =broker.get_nifty_token()
 
 
-
+builder = CandleBuilder(30)
 strategy = strategy()
 risk = RiskManager()
 trade = TradeManager(broker, risk)
@@ -42,7 +42,10 @@ if not signalStarted:
 def on_tick(price):
     global signalStarted, lotIndex, isTradeActive ,ord_numer,signal
     signal=None
-    signal=strategy.on_candle(price, datetime.now(pytz.timezone("Asia/Kolkata")))
+    candle = builder.update(price)
+    if candle:
+        signal = strategy.on_candle(candle)
+        signal=strategy.on_candle(price, datetime.now(pytz.timezone("Asia/Kolkata")))
     
         
     ## receving signal 

@@ -1,5 +1,74 @@
 from collections import deque
 import numpy as np
+import pytz
+from datetime import datetime, time, timezone
+# ================= CONFIG =================
+
+class Config:
+    MIN_CANDLES = 15
+
+config = Config()
+
+# ================= CANDLE BUILDER =================
+
+class CandleBuilder:
+
+    def __init__(self, interval_sec=60):
+        self.interval = interval_sec
+        self.current = None
+        self.last_bucket = None
+
+    def update(self, price, volume=1):
+        now = datetime.now(pytz.timezone("Asia/Kolkata"))
+        bucket = int(now.timestamp() // self.interval)
+
+        if self.last_bucket is None:
+            self.last_bucket = bucket
+
+        if bucket != self.last_bucket:
+
+            finished = self.current
+
+            self.current = {
+                "open": price,
+                "high": price,
+                "low": price,
+                "close": price,
+                "volume": volume
+            }
+
+            self.last_bucket = bucket
+            if finished:
+              return finished
+
+        if self.current is None:
+
+            self.current = {
+                "open": price,
+                "high": price,
+                "low": price,
+                "close": price,
+                "volume": volume
+            }
+
+        else:
+
+            self.current["high"] = max(
+                self.current["high"],
+                price
+            )
+
+            self.current["low"] = min(
+                self.current["low"],
+                price
+            )
+
+            self.current["close"] = price
+            self.current["volume"] += volume
+
+        return None
+
+
 
 class strategy:
     def __init__(self):
