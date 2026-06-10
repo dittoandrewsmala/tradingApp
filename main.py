@@ -17,7 +17,7 @@ position = Position()
 nifty_token =broker.get_nifty_token()
 
 
-builder = CandleBuilder(30)
+builder = CandleBuilder(10)
 strategy = strategy()
 risk = RiskManager()
 trade = TradeManager(broker, risk)
