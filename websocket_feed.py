@@ -37,12 +37,17 @@ class MarketFeed:
 
         # ---- MARKET DATA ----
         elif "lp" in data:
-
+            
             ltp = float(data["lp"])
-            logger.printD("📊 LTP:"+ str(ltp))
+            volume = float(data.get("v", 0))
+            open_price = float(data.get("o", ltp))
+            high = float(data.get("h", ltp))
+            low = float(data.get("l", ltp))
+            close = float(data.get("c", ltp))
+
 
             if self.callback:
-                self.callback(ltp)
+                self.callback(ltp,volume,open_price,low,high,close)
 
         # ---- HEARTBEAT ----
         elif msg_type == "h":

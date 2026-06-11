@@ -19,7 +19,7 @@ class CandleBuilder:
         self.current = None
         self.last_bucket = None
 
-    def update(self, price, volume=1):
+    def update(self, price, volume, open, low, high, close):
         now = datetime.now(pytz.timezone("Asia/Kolkata"))
         bucket = int(now.timestamp() // self.interval)
 
@@ -30,10 +30,10 @@ class CandleBuilder:
             finished = self.current
 
             self.current = {
-                "open": price,
-                "high": price,
-                "low": price,
-                "close": price,
+                "open": open ,
+                "high": high ,
+                "low": low ,
+                "close": close ,
                 "volume": volume
             }
 
@@ -43,10 +43,10 @@ class CandleBuilder:
 
         if self.current is None:
             self.current = {
-                "open": price,
-                "high": price,
-                "low": price,
-                "close": price,
+                "open": open ,
+                "high": high ,
+                "low": low ,
+                "close": close,
                 "volume": volume
             }
         else:
@@ -63,7 +63,6 @@ class CandleBuilder:
 class strategy:  # Kept lowercase to maintain synchronization with main.py & Order.py
     def __init__(self):
         self.prices = deque(maxlen=100)
-        self.volumes = deque(maxlen=30)
         
         # O(1) RSI Tracker
         self.rsi_period = 14
@@ -131,69 +130,53 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
             
         self.last_price = current_price
 
-    def _log_diagnostics(self, price, vwap, volume_spike, avg_volume, volume):
+    def _log_diagnostics(self, price, vwap):
         """Prints out a complete, scannable breakdown of criteria evaluation."""
         ema_gap = abs(self.ema9 - self.ema21) if (self.ema9 and self.ema21) else 0
-        min_gap = price * 0.0004
+        min_gap = price * 0.0001
         
         print("--- [STRATEGY CANDLE DIAGNOSTICS] ---")
         print(f"Price: {price:.2f} | VWAP: {vwap:.2f}")
         print(f"EMA9: {self.ema9:.2f} | EMA21: {self.ema21:.2f} | Gap: {ema_gap:.4f} (Req min: {min_gap:.4f})")
         print(f"RSI: {f'{self.rsi:.2f}' if self.rsi is not None else 'Warming Up'} (Req: Buy 45-75, Sell 25-55)")
-        print(f"Volume: {volume} | Avg Volume: {avg_volume:.1f} | Spike (>1.2x): {volume_spike}")
         
         # Check specific filters
         ema_bullish = self.ema9 > self.ema21 if (self.ema9 and self.ema21) else False
         ema_bearish = self.ema9 < self.ema21 if (self.ema9 and self.ema21) else False
         
-        print(f"↳ BULLISH CHECK -> EMA Cross: {ema_bullish} | Price > VWAP: {price > vwap} | Gap OK: {ema_gap > min_gap} | Vol Spike: {volume_spike}")
-        print(f"↳ BEARISH CHECK -> EMA Cross: {ema_bearish} | Price < VWAP: {price < vwap} | Gap OK: {ema_gap > min_gap} | Vol Spike: {volume_spike}")
+        print(f"↳ BULLISH CHECK -> EMA Cross: {ema_bullish} | Price > VWAP: {price > vwap} | Gap OK: {ema_gap > min_gap}")
+        print(f"↳ BEARISH CHECK -> EMA Cross: {ema_bearish} | Price < VWAP: {price < vwap} | Gap OK: {ema_gap > min_gap}")
         print("-------------------------------------\n")
 
-    def detect_scenario(self, price, vwap, volume_spike, avg_volume, volume):
-        if len(self.prices) < 25 or len(self.volumes) < 15: 
+    def detect_scenario(self, price, vwap):
+        if len(self.prices) < 25: 
             return "NO_TRADE"
 
         if self.rsi is None:
             return "NO_TRADE"
 
         ema_gap = abs(self.ema9 - self.ema21)
-        
-        # FIX 1: Lower the Gap Factor to 0.0001 (~2.3 points on Nifty) 
-        # instead of 0.0004 (~9.3 points)
         min_gap = price * 0.0001  
         
         bullish_trend = self.ema9 > self.ema21 and price > vwap and ema_gap > min_gap
         bearish_trend = self.ema9 < self.ema21 and price < vwap and ema_gap > min_gap
 
-        if bullish_trend and volume_spike:
-            # FIX 2: Widen RSI limit for strong trend breakouts on low timeframes
+        if bullish_trend:
             if self.rsi >= 45 and price > self.ema9:
                 return "BUY"
 
-        if bearish_trend and volume_spike:
-            # Widen short side RSI bracket similarly
+        if bearish_trend:
             if self.rsi <= 55 and price < self.ema9:
                 return "SELL"
 
-        self._log_diagnostics(price, vwap, volume_spike, avg_volume, volume)
+        self._log_diagnostics(price, vwap)
         return "NO_TRADE"
 
     def on_candle(self, candle, current_time):
         price = candle["close"]
         volume = candle["volume"]
         
-        # Calculate volume spike parameters using past context historical averages
-        if len(self.volumes) >= 15:
-            avg_volume = sum(self.volumes) / len(self.volumes)
-            volume_spike = volume > (avg_volume * 1.05)
-        else:
-            avg_volume = 0
-            volume_spike = False
-
         self.prices.append(price)
-        self.volumes.append(volume)
-        
         self.calculate_rsi(price)
 
         if self.ema9 is None:
@@ -228,7 +211,7 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
             return None
 
         if self.position is None:
-            scenario = self.detect_scenario(price, vwap, volume_spike, avg_volume, volume)
+            scenario = self.detect_scenario(price, vwap)
             if scenario in ["BUY", "SELL"]:
                 self.enter(price, scenario, current_time)
                 return {"action": scenario, "price": price, "time": current_time}
