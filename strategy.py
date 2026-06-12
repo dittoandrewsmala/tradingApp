@@ -282,10 +282,4 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
         self.last_trade_time = current_time
         return reason
 
-    def reset_position(self):
-        self.position = None
-        self.entry_price = None
-        self.target = None
-        self.stoploss = None
-        self.highest_price_since_entry = None
-        self.lowest_price_since_entry = None
+    
