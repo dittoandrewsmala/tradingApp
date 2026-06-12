@@ -25,7 +25,7 @@ isTradeActive = False
 lotIndex = 0
 signalStarted = False
 ord_numer = None
-
+condition = None
 
 if not signalStarted:
         logger.printD("🚀 Starting signal generation...")
