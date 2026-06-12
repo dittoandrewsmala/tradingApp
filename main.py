@@ -70,6 +70,7 @@ def on_tick(price, volume,open,low,high,close):
     if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
+        condition = None
         if "BUY" in signal:
             condition = "BUY"
         elif "SELL" in signal:
