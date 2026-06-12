@@ -12,7 +12,7 @@ import pytz
 
 logger = Logger()
 broker = Broker()
-broker.login()  
+broker.login()
 position = Position()
 nifty_token =broker.get_nifty_token()
 
@@ -26,26 +26,6 @@ lotIndex = 0
 signalStarted = False
 ord_numer = None
 
-class Logger:
-
-    def __init__(self, logfile="trading.log"):
-        self.logfile = logfile
-
-    def _write(self, level, msg):
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        line = f"[{timestamp}] [{level}] {msg}"
-
-        print(line)
-
-        with open(self.logfile, "a", encoding="utf-8") as f:
-            f.write(line + "\n")
-
-    def printD(self, msg):
-        self._write("DEBUG", msg)
-
-    
-logger = Logger()
-## initalize signal generation and max payout check
 
 if not signalStarted:
         logger.printD("🚀 Starting signal generation...")

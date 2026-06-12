@@ -208,7 +208,11 @@ class Order:
             print("⛔ Trading blocked. Max loss reached.")
             return None, None
         
-
+        if self.total_pnl>=0:
+            lotIndex=0
+        else:
+            lotIndex=int(self.total_pnl/65*1.5)
+        
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         qty=65*lotIndex
         sellPrice=None
