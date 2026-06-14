@@ -212,7 +212,8 @@ class Order:
             lotIndex=0
         else:
             lotIndex=int(self.total_pnl/65*1.5)
-        
+        if lotIndex> 5:
+            lotIndex=5  
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
         qty=65*lotIndex
         sellPrice=None
