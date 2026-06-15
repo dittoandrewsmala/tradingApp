@@ -236,7 +236,7 @@ class Order:
         
         target = entry_price + 3
            
-        stop_loss = entry_price -2
+        stop_loss = entry_price -1.5
        
         exit_price = None
         
@@ -252,7 +252,7 @@ class Order:
                     continue
 
                 
-                if ltp > target-1.5:
+                if ltp > target-2:
                     stop_loss = stop_loss+1.5
                     target= target+2
                     continue
