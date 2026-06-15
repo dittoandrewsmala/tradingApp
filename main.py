@@ -44,11 +44,7 @@ def on_tick(price, volume,open,low,high,close):
     candle = builder.update(price,1,open,low,high,close)
     if candle:
         signal=strategy.on_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
-        if signal !=None:
-            strategy.reset()
-        
-        
-    
+
         
     ## receving signal 
     
@@ -73,14 +69,14 @@ def on_tick(price, volume,open,low,high,close):
     if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
         if len(strategy.candles) < 25:
             return
-        first_candle = strategy.candles[0]
-        twenty_fifth_candle = strategy.candles[24]
+        first_candle = strategy.candles[-25]
+        last_candle = strategy.candles[-1]
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
         condition = None
-        if signal.get("action") in ["BUY"] and twenty_fifth_candle["close"] > first_candle["close"]:
+        if signal.get("action") in ["BUY"] and last_candle["close"] > first_candle["close"]:
             condition = "BUY"
-        elif signal.get("action") in ["SELL"] and twenty_fifth_candle["close"] < first_candle["close"]:
+        elif signal.get("action") in ["SELL"] and last_candle["close"] < first_candle["close"]:
             condition = "SELL"
         if condition is None:
             return
