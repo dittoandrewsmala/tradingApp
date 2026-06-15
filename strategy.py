@@ -99,6 +99,7 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
         self.avg_gain = None
         self.avg_loss = None
         self.rsi = None
+        self.candles = deque(maxlen=100)
 
     def calculate_rsi(self, current_price):
         if self.last_price is None:
@@ -162,11 +163,11 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
         bearish_trend = self.ema9 < self.ema21 and price < vwap and ema_gap > min_gap
 
         if bullish_trend:
-            if self.rsi >= 45 and price > self.ema9:
+            if self.rsi >= 55 and price > self.ema9:
                 return "BUY"
 
         if bearish_trend:
-            if self.rsi <= 55 and price < self.ema9:
+            if self.rsi <= 45 and price < self.ema9:
                 return "SELL"
 
         self._log_diagnostics(price, vwap)
@@ -175,7 +176,7 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
     def on_candle(self, candle, current_time):
         price = candle["close"]
         volume = candle["volume"]
-        
+        self.candles.append(candle)
         self.prices.append(price)
         self.calculate_rsi(price)
 
@@ -283,7 +284,7 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
         return reason
     def reset(self):
         self.prices = deque(maxlen=100)
-        
+        self.candles = deque(maxlen=100)
         # O(1) RSI Tracker
         self.rsi_period = 14
         self.rsi_seed_count = 0

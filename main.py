@@ -71,14 +71,22 @@ def on_tick(price, volume,open,low,high,close):
     
      
     if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
+        if len(strategy.candles) < 25:
+            return
+        first_candle = strategy.candles[0]
+        twenty_fifth_candle = strategy.candles[24]
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
         condition = None
-        if signal.get("action") in ["BUY"]:
+        if signal.get("action") in ["BUY"] and twenty_fifth_candle["close"] > first_candle["close"]:
             condition = "BUY"
-        elif signal.get("action") in ["SELL"]:
+        elif signal.get("action") in ["SELL"] and twenty_fifth_candle["close"] < first_candle["close"]:
             condition = "SELL"
+        if condition is None:
+            return
         ord_numer,profitOrLoss=trade.on_signal(condition, price,lotIndex)
+        if profitOrLoss in ["PROFIT", "LOSS"]:
+            strategy.reset()
         if profitOrLoss == "PROFIT":
              lotIndex=0
         elif profitOrLoss == "LOSS":
