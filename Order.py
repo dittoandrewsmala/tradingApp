@@ -211,7 +211,7 @@ class Order:
         if self.total_pnl>=0:
             lotIndex=0
         else:
-            lotIndex=int(self.total_pnl/65*1.5)
+            lotIndex=abs(int(self.total_pnl/65))
         if lotIndex> 5:
             lotIndex=5  
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
@@ -283,9 +283,9 @@ class Order:
         # ✅ PnL CALCULATION
         pnl = 0
         if exit_price is not None and exit_price > 0:
-            pnl = (exit_price - entry_price) * qty - 20*lotIndex
+            pnl = (exit_price - entry_price) * qty -20
         else:
-            pnl = -20*lotIndex
+            pnl = -20
 
         self.total_pnl += pnl
 
