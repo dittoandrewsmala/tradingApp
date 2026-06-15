@@ -71,9 +71,9 @@ def on_tick(price, volume,open,low,high,close):
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
         condition = None
-        if "BUY" in signal:
+        if signal.get("action") in ["BUY"]:
             condition = "BUY"
-        elif "SELL" in signal:
+        elif signal.get("action") in ["SELL"]:
             condition = "SELL"
         ord_numer,profitOrLoss=trade.on_signal(condition, price,lotIndex)
         if profitOrLoss == "PROFIT":
