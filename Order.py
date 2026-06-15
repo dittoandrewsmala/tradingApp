@@ -215,6 +215,9 @@ class Order:
         if lotIndex> 5:
             lotIndex=5  
         #qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
+        if lotIndex==0:
+            lotIndex=1 
+
         qty=65*lotIndex
         sellPrice=None
 
