@@ -56,6 +56,7 @@ class TradeManager:
         #if self.position:
         #    return
         ordNum = None
+        profitOrLoss = None
        
 
         # BUY CALL OPTION
