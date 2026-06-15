@@ -246,7 +246,7 @@ class Order:
                 time.sleep(1)
                 
                 ltp = self.get_ltp(symbol)
-                print(f"LTP: {ltp} | Target: {target} | SL: {stop_loss}")
+                print(f"LTP: {ltp} | Target: {target-1.5} | SL: {stop_loss}")
 
                 if ltp is None:
                     continue
