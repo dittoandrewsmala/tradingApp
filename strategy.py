@@ -281,5 +281,42 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
         self.stoploss = None
         self.last_trade_time = current_time
         return reason
+    def reset(self):
+        self.prices = deque(maxlen=100)
+        
+        # O(1) RSI Tracker
+        self.rsi_period = 14
+        self.rsi_seed_count = 0
+        self.seed_gain_sum = 0.0
+        self.seed_loss_sum = 0.0
+        
+        # EMAs
+        self.ema9 = None
+        self.ema21 = None
+        self.k9 = 2 / (9 + 1)
+        self.k21 = 2 / (21 + 1)
+        self.prev_price = None
+        
+        # VWAP
+        self.total_pv = 0
+        self.total_volume = 0
+        self.current_day = None
+        
+        # Trade Status
+        self.position = None
+        self.entry_price = None
+        self.target = None
+        self.stoploss = None
+        self.highest_price_since_entry = None
+        self.lowest_price_since_entry = None
+        
+        self.last_trade_time = None
+        self.cooldown_seconds = 60  
+        self.trades = []
+        self.pnl = 0
 
+        self.last_price = None
+        self.avg_gain = None
+        self.avg_loss = None
+        self.rsi = None
     

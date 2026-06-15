@@ -80,8 +80,7 @@ def on_tick(price, volume,open,low,high,close):
              lotIndex=0
         elif profitOrLoss == "LOSS":
              lotIndex=lotIndex+1
-
-        strategy = strategy()
+        strategy.reset()
         
         
         
