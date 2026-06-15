@@ -44,7 +44,10 @@ def on_tick(price, volume,open,low,high,close):
     candle = builder.update(price,1,open,low,high,close)
     if candle:
         signal=strategy.on_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
-        logger.printD("Signal:" + str(signal))
+        if signal !=None:
+            strategy.reset()
+        
+        
     
         
     ## receving signal 
@@ -80,15 +83,11 @@ def on_tick(price, volume,open,low,high,close):
              lotIndex=0
         elif profitOrLoss == "LOSS":
              lotIndex=lotIndex+1
-        strategy.reset()
-        
-        
-        
-            
         if ord_numer is not None:
             isTradeActive = False
             ord_numer = None
-            
+
+           
 
 
             
