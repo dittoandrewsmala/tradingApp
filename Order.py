@@ -414,8 +414,7 @@ class Order:
         else:
             lotIndex = abs(int(self.total_pnl / 65))
 
-        if lotIndex > 5:
-            lotIndex = 5  
+         
             
         if lotIndex == 0:
             lotIndex = 1 
