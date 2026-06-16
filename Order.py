@@ -420,7 +420,7 @@ class Order:
         if lotIndex == 0:
             lotIndex = 1 
         
-        lotIndex=8
+        
         qty = 65 * lotIndex
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
