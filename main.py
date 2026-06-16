@@ -37,13 +37,14 @@ if not signalStarted:
 
 
 def on_tick(price, volume,open,low,high,close):
-    global signalStarted, lotIndex, isTradeActive ,ord_numer,signal
+    global signalStarted, lotIndex, isTradeActive ,ord_numer,signal,checkLot
     signal=None
+    checkLot=True
 
     logger.printD(f"price :{price} Volume: {volume} | O: {open} | H: {high} | L: {low} | C: {close}")
     candle = builder.update(price,1,open,low,high,close)
-    #if candle:
-        #signal=strategy.on_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
+    if candle:
+        signal=strategy.on_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
 
         
     ## receving signal 
@@ -66,14 +67,20 @@ def on_tick(price, volume,open,low,high,close):
     
     
      
-    #if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
-    if  len(strategy.candles) >= 25  and not isTradeActive and current_time >= time(9, 30):
+    if  lotIndex>5:
+        checkLot=False 
+        if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
+            checkLot=True
+    
+    if  checkLot and len(strategy.candles) >= 25  and not isTradeActive and current_time >= time(9, 30):
         first_candle = strategy.candles[-25]
         last_candle = strategy.candles[-1]
         last_candle_2 = strategy.candles[-2]
         last_candle_3 = strategy.candles[-3]
         last_candle_4 = strategy.candles[-4]
         last_candle_5 = strategy.candles[-5]
+        print(f"First candle: {first_candle['close']}, Last candle: {last_candle['close']}")
+        print(f"Last 5 candles: {[candle['close'] for candle in strategy.candles[-5:]]}")
 
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
