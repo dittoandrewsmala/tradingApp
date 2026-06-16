@@ -42,8 +42,8 @@ def on_tick(price, volume,open,low,high,close):
 
     logger.printD(f"price :{price} Volume: {volume} | O: {open} | H: {high} | L: {low} | C: {close}")
     candle = builder.update(price,1,open,low,high,close)
-    if candle:
-        signal=strategy.on_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
+    #if candle:
+        #signal=strategy.on_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
 
         
     ## receving signal 
@@ -66,17 +66,21 @@ def on_tick(price, volume,open,low,high,close):
     
     
      
-    if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
-        if len(strategy.candles) < 25:
-            return
+    #if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
+    if  len(strategy.candles) >= 25  and not isTradeActive and current_time >= time(9, 30):
         first_candle = strategy.candles[-25]
         last_candle = strategy.candles[-1]
+        last_candle_2 = strategy.candles[-2]
+        last_candle_3 = strategy.candles[-3]
+        last_candle_4 = strategy.candles[-4]
+        last_candle_5 = strategy.candles[-5]
+
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
         condition = None
-        if signal.get("action") in ["BUY"] and last_candle["close"] > first_candle["close"]:
+        if  last_candle["close"] > first_candle["close"] and last_candle["close"] > last_candle_2["close"] and last_candle_2["close"] > last_candle_3["close"] and last_candle_3["close"] > last_candle_4["close"] and last_candle_4["close"] > last_candle_5["close"]:
             condition = "BUY"
-        elif signal.get("action") in ["SELL"] and last_candle["close"] < first_candle["close"]:
+        elif  last_candle["close"] < first_candle["close"] and last_candle["close"] < last_candle_2["close"] and last_candle_2["close"] < last_candle_3["close"] and last_candle_3["close"] < last_candle_4["close"] and last_candle_4["close"] < last_candle_5["close"]:
             condition = "SELL"
         if condition is None:
             return

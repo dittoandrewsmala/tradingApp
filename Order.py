@@ -419,7 +419,8 @@ class Order:
             
         if lotIndex == 0:
             lotIndex = 1 
-
+        
+        lotIndex=8
         qty = 65 * lotIndex
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
@@ -430,7 +431,7 @@ class Order:
             return None, None
 
         # Base target and trailing management
-        target = entry_price + 3   
+        target = entry_price + 2   
         stop_loss = entry_price - 1.5
        
         exit_price = None
@@ -447,8 +448,8 @@ class Order:
                 print(f"LTP: {ltp} | Trg Threshold: {target - 2} | SL: {stop_loss}")
 
                 # Trailing Stop Loss Mechanism
-                if ltp > (target - 2):
-                    stop_loss = stop_loss + 1.5
+                if ltp > (target - 1.5):
+                    stop_loss = stop_loss + 1
                     target = target + 2
                     continue
                 elif ltp <= stop_loss:
