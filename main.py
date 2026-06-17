@@ -80,7 +80,7 @@ def on_tick(price, volume,open,low,high,close):
         last_candle_4 = strategy.candles[-4]
         last_candle_5 = strategy.candles[-5]
         print(f"First candle: {first_candle['close']}, Last candle: {last_candle['close']}")
-        print(f"Last 5 candles: {[candle['close'] for candle in strategy.candles[-5:]]}")
+        print(f"Last 5 candles: {[candle['close'] for candle in list(strategy.candles)[-5:]]}")
 
         trade.session_token=broker.session
         print("current index value: "+ str(lotIndex))
