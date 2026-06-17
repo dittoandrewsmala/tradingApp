@@ -444,7 +444,7 @@ class Order:
                 if ltp is None:
                     continue
 
-                print(f"LTP: {ltp} | Trg Threshold: {target - 2} | SL: {stop_loss}")
+                print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
 
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
