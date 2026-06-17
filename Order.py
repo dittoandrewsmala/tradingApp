@@ -430,7 +430,7 @@ class Order:
             return None, None
 
         # Base target and trailing management
-        target = entry_price + .5   
+        target = entry_price + .8   
         stop_loss = entry_price - .8
        
         exit_price = None
@@ -473,9 +473,9 @@ class Order:
 
         # ✅ PnL CALCULATION
         if exit_price is not None and exit_price > 0:
-            pnl = (exit_price - entry_price) * qty - 20
+            pnl = (exit_price - entry_price) * qty - 40
         else:
-            pnl = -20
+            pnl = -40
 
         self.total_pnl += pnl
         profitOrLoss = "PROFIT" if pnl >= 0 else "LOSS"
