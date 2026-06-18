@@ -420,7 +420,7 @@ class Order:
             lotIndex = 1 
         
         
-        qty = 65 * 5
+        qty = 65 * 8
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
             return None, None
@@ -430,8 +430,8 @@ class Order:
             return None, None
 
         # Base target and trailing management
-        target = entry_price + .5   
-        stop_loss = entry_price - .5
+        target = entry_price + .8  
+        stop_loss = entry_price - .8
        
         exit_price = None
         profitOrLoss = "LOSS"
