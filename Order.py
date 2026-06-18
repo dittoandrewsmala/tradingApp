@@ -15,7 +15,8 @@ class Order:
         self.token_cache = {}
         self.total_pnl = 0
         self.max_loss = -2000
-        self.lotnumbers = [1,3,6,8,10,10,30,50]  
+        #self.lotnumbers = [1,3,6,9,9,9,30,50] 
+         
         self.target_arr = [1,2,5,5,7,6,9,12]  
         self.stop_loss_arr = [1,2,5,5,7,6,9,12]
 
@@ -217,7 +218,7 @@ class Order:
         self.token_cache = {}
         self.total_pnl = 0
         self.max_loss = -2000
-        self.lotnumbers = [1,1,1,2,3,9,12,20]  
+        self.lotnumbers = [1,3,5,9,9,9,12,20]  
         self.target_arr = [1,2,5,5,7,6,9,12]  
         self.stop_loss_arr = [1,2,5,5,7,6,9,12]
 
@@ -413,6 +414,7 @@ class Order:
         
         
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
+        qty=130
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
             return None, None
