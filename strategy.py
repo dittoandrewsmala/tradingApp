@@ -136,18 +136,12 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
         ema_gap = abs(self.ema9 - self.ema21) if (self.ema9 and self.ema21) else 0
         min_gap = price * 0.0001
         
-        print("--- [STRATEGY CANDLE DIAGNOSTICS] ---")
-        print(f"Price: {price:.2f} | VWAP: {vwap:.2f}")
-        print(f"EMA9: {self.ema9:.2f} | EMA21: {self.ema21:.2f} | Gap: {ema_gap:.4f} (Req min: {min_gap:.4f})")
-        print(f"RSI: {f'{self.rsi:.2f}' if self.rsi is not None else 'Warming Up'} (Req: Buy 45-75, Sell 25-55)")
         
         # Check specific filters
         ema_bullish = self.ema9 > self.ema21 if (self.ema9 and self.ema21) else False
         ema_bearish = self.ema9 < self.ema21 if (self.ema9 and self.ema21) else False
         
-        print(f"↳ BULLISH CHECK -> EMA Cross: {ema_bullish} | Price > VWAP: {price > vwap} | Gap OK: {ema_gap > min_gap}")
-        print(f"↳ BEARISH CHECK -> EMA Cross: {ema_bearish} | Price < VWAP: {price < vwap} | Gap OK: {ema_gap > min_gap}")
-        print("-------------------------------------\n")
+        
 
     def detect_scenario(self, price, vwap):
         if len(self.prices) < 25: 
@@ -232,12 +226,12 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
             self.stoploss = price - risk_distance
             self.target = price + (risk_distance * 1.5)  
             self.highest_price_since_entry = price
-            print(f"\n[TRADE ENTERED] Long at {price:.2f} | SL: {self.stoploss:.2f} | Target: {self.target:.2f}\n")
+            # print(f"\n[TRADE ENTERED] Long at {price:.2f} | SL: {self.stoploss:.2f} | Target: {self.target:.2f}\n")
         else:
             self.stoploss = price + risk_distance
             self.target = price - (risk_distance * 1.5)
             self.lowest_price_since_entry = price
-            print(f"\n[TRADE ENTERED] Short at {price:.2f} | SL: {self.stoploss:.2f} | Target: {self.target:.2f}\n")
+            # print(f"\n[TRADE ENTERED] Short at {price:.2f} | SL: {self.stoploss:.2f} | Target: {self.target:.2f}\n")
 
     def check_exit(self, current_price, current_time):
         if self.position is None: 
@@ -274,7 +268,7 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
         self.pnl += pnl
         self.trades.append(pnl)
         
-        print(f"[TRADE CLOSED] Exit Reason: {reason} at {price:.2f} | Trade PnL: {pnl:.2f} | Cum. PnL: {self.pnl:.2f}\n")
+        # print(f"[TRADE CLOSED] Exit Reason: {reason} at {price:.2f} | Trade PnL: {pnl:.2f} | Cum. PnL: {self.pnl:.2f}\n")
         
         self.position = None
         self.entry_price = None

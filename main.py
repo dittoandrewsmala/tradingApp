@@ -79,11 +79,10 @@ def on_tick(price, volume,open,low,high,close):
         last_candle_3 = strategy.candles[-3]
         last_candle_4 = strategy.candles[-4]
         last_candle_5 = strategy.candles[-5]
-        print(f"First candle: {first_candle['close']}, Last candle: {last_candle['close']}")
-        print(f"Last 5 candles: {[candle['close'] for candle in list(strategy.candles)[-5:]]}")
+        
 
         trade.session_token=broker.session
-        print("current index value: "+ str(lotIndex))
+        
         condition = None
         if  last_candle["close"] > first_candle["close"] and last_candle["close"] > last_candle_2["close"] and last_candle_2["close"] > last_candle_3["close"] and last_candle_3["close"] > last_candle_4["close"] and last_candle_4["close"] > last_candle_5["close"]:
             condition = "BUY"

@@ -431,7 +431,7 @@ class Order:
 
         # Base target and trailing management
         target = entry_price + .5   
-        stop_loss = entry_price - .8
+        stop_loss = entry_price - .5
        
         exit_price = None
         profitOrLoss = "LOSS"
@@ -449,8 +449,10 @@ class Order:
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
                     stop_loss=ltp
+                    stop_loss=stop_loss-0.2
                     target=target+0.8
                 elif ltp <= stop_loss:
+                    print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
                     for attempt in range(25):
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
