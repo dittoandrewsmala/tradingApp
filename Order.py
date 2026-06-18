@@ -15,7 +15,7 @@ class Order:
         self.token_cache = {}
         self.total_pnl = 0
         self.max_loss = -2000
-        self.lotnumbers = [1,3,5,9,12,20,30,50]  
+        self.lotnumbers = [1,3,6,8,10,10,30,50]  
         self.target_arr = [1,2,5,5,7,6,9,12]  
         self.stop_loss_arr = [1,2,5,5,7,6,9,12]
 
@@ -466,9 +466,9 @@ class Order:
 
         # ✅ PnL CALCULATION
         if exit_price is not None and exit_price > 0:
-            pnl = (exit_price - entry_price) * qty - 40
+            pnl = (exit_price - entry_price) * qty - 20
         else:
-            pnl = -40
+            pnl = -20
 
         self.total_pnl += pnl
         profitOrLoss = "PROFIT" if pnl >= 0 else "LOSS"
