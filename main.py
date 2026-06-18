@@ -67,10 +67,10 @@ def on_tick(price, volume,open,low,high,close):
     
     
      
-    if  lotIndex>5:
-        checkLot=False 
-        if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
-            checkLot=True
+    #if  lotIndex>5:
+        #checkLot=False 
+        #if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
+            #checkLot=True
     
     if  checkLot and len(strategy.candles) >= 25  and not isTradeActive and current_time >= time(9, 30):
         first_candle = strategy.candles[-25]
@@ -85,9 +85,11 @@ def on_tick(price, volume,open,low,high,close):
         
         condition = None
         if  last_candle["close"] > first_candle["close"] and last_candle["close"] > last_candle_2["close"] and last_candle_2["close"] > last_candle_3["close"] and last_candle_3["close"] > last_candle_4["close"] and last_candle_4["close"] > last_candle_5["close"]:
-            condition = "BUY"
+            if last_candle["close"] - last_candle_2["close"] >=1 and last_candle_2["close"] - last_candle_3["close"] >=1 and last_candle_3["close"] - last_candle_4["close"] >=1 and last_candle_4["close"] - last_candle_5["close"] >=1:
+                condition = "BUY"
         elif  last_candle["close"] < first_candle["close"] and last_candle["close"] < last_candle_2["close"] and last_candle_2["close"] < last_candle_3["close"] and last_candle_3["close"] < last_candle_4["close"] and last_candle_4["close"] < last_candle_5["close"]:
-            condition = "SELL"
+            if last_candle["close"] - last_candle_2["close"] >=1 and last_candle_2["close"] - last_candle_3["close"] >=1 and last_candle_3["close"] - last_candle_4["close"] >=1 and last_candle_4["close"] - last_candle_5["close"] >=1:
+                condition = "SELL"
         if condition is None:
             return
         ord_numer,profitOrLoss=trade.on_signal(condition, price,lotIndex)
