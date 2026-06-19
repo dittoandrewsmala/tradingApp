@@ -423,8 +423,8 @@ class Order:
             return None, None
 
         # Base target and trailing management
-        target = entry_price + .8  
-        stop_loss = entry_price - .7
+        target = entry_price + 2  
+        stop_loss = entry_price - 3
        
         exit_price = None
         profitOrLoss = "LOSS"
