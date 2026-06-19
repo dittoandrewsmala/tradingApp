@@ -38,7 +38,7 @@ PAPER_MODE = False
 
 CAPITAL = 20000
 RISK_PERCENT = 1
-CANDLE_DIFF= 2
+CANDLE_DIFF= 3
 
 stop_target_counter=1
 
@@ -47,7 +47,7 @@ CUT_OFF_TIME = 14
 # increse yime for stop loss and target hit check value incress to avoid mising target hit and stop loss hit
 WAIT_MARKETFEED_TIME = 30
 
-timeInterval = 3  # in seconds
+timeInterval = 4  # in seconds
 LOT_SIZE = 65   # NIFTY lot size
 MIN_CANDLES = 10  # Minimum candles required for indicators
 # R or D

@@ -44,7 +44,7 @@ def on_tick(price, volume,open,low,high,close):
     logger.printD(f"price :{price} Volume: {volume} | O: {open} | H: {high} | L: {low} | C: {close}")
     candle = builder.update(price,1,open,low,high,close)
     if candle:
-        signal=strategy.on_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
+        signal=strategy.add_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
 
         
     ## receving signal 
@@ -73,7 +73,7 @@ def on_tick(price, volume,open,low,high,close):
             #checkLot=True
     
     if  checkLot and len(strategy.candles) >= 25  and not isTradeActive and current_time >= time(9, 30):
-        first_candle = strategy.candles[-25]
+        
         last_candle = strategy.candles[-1]
         last_candle_2 = strategy.candles[-2]
         last_candle_3 = strategy.candles[-3]

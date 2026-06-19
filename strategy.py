@@ -166,7 +166,8 @@ class strategy:  # Kept lowercase to maintain synchronization with main.py & Ord
 
         self._log_diagnostics(price, vwap)
         return "NO_TRADE"
-
+    def add_candle(self, candle, current_time):
+        self.candles.append(candle)
     def on_candle(self, candle, current_time):
         price = candle["close"]
         volume = candle["volume"]
