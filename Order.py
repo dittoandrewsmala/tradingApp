@@ -15,9 +15,9 @@ class Order:
         self.token_cache = {}
         self.total_pnl = 0
         self.max_loss = -2000
-        #self.lotnumbers = [1,3,6,9,9,9,30,50] 
+        self.lotnumbers = [1,3,6,9,12,15,30,50] 
          
-        self.target_arr = [1,2,5,5,7,6,9,12]  
+        self.target_arr = [1,3,6,9,12,6,9,12]  
         self.stop_loss_arr = [1,2,5,5,7,6,9,12]
 
     # ---------------- API ----------------
@@ -414,7 +414,6 @@ class Order:
         
         
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=130
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
             return None, None
@@ -425,7 +424,7 @@ class Order:
 
         # Base target and trailing management
         target = entry_price + .8  
-        stop_loss = entry_price - .6
+        stop_loss = entry_price - .7
        
         exit_price = None
         profitOrLoss = "LOSS"
