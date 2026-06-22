@@ -414,7 +414,7 @@ class Order:
         
         
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty = 325
+        qty = 65
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
             return None, None
@@ -424,8 +424,8 @@ class Order:
             return None, None
 
         # Base target and trailing management
-        target = entry_price + 2  
-        stop_loss = entry_price - 3
+        target = entry_price + 5  
+        stop_loss = entry_price - 5
        
         exit_price = None
         profitOrLoss = "LOSS"

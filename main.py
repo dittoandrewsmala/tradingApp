@@ -9,8 +9,11 @@ from logger import Logger
 import config
 import sys
 import pytz
-
+from logger import Logger
 logger = Logger()
+import logging
+
+
 broker = Broker()
 broker.login()
 position = Position()
@@ -41,7 +44,7 @@ def on_tick(price, volume,open,low,high,close):
     signal=None
     checkLot=True
 
-    logger.printD(f"price :{price} Volume: {volume} | O: {open} | H: {high} | L: {low} | C: {close}")
+    
     candle = builder.update(price,1,open,low,high,close)
     if candle:
         signal=strategy.add_candle(candle, datetime.now(pytz.timezone("Asia/Kolkata")))
@@ -65,30 +68,27 @@ def on_tick(price, volume,open,low,high,close):
         #sys.exit(0)
     
     
-    
+        
      
     #if  lotIndex>5:
         #checkLot=False 
         #if  signal !=None and signal and signal.get("action") in ["BUY", "SELL"]  and not isTradeActive and current_time >= time(9, 30):
             #checkLot=True
     
-    if  checkLot and len(strategy.candles) >= 5  and not isTradeActive and current_time >= time(9, 30):
+    if  checkLot and len(strategy.candles) >= 5  and not isTradeActive :
         
         last_candle = strategy.candles[-1]
-        last_candle_2 = strategy.candles[-2]
-        last_candle_3 = strategy.candles[-3]
-        last_candle_4 = strategy.candles[-4]
         last_candle_5 = strategy.candles[-5]
         
 
         trade.session_token=broker.session
         
         condition = None
-        if   last_candle["close"] > last_candle_2["close"] and last_candle_2["close"] > last_candle_3["close"] and last_candle_3["close"] > last_candle_4["close"] and last_candle_4["close"] > last_candle_5["close"]:
-            if last_candle["close"] - last_candle_2["close"] >=config.CANDLE_DIFF and last_candle_2["close"] - last_candle_3["close"] >=config.CANDLE_DIFF and last_candle_3["close"] - last_candle_4["close"] >=config.CANDLE_DIFF and last_candle_4["close"] - last_candle_5["close"] >=config.CANDLE_DIFF:
+        if   last_candle["close"] > last_candle_5["close"]:
+            if last_candle["close"] - last_candle_5["close"] >=config.CANDLE_DIFF:
                 condition = "BUY"
-        elif  last_candle["close"] < last_candle_2["close"] and last_candle["close"] < last_candle_3["close"] and last_candle_3["close"] < last_candle_4["close"] and last_candle_4["close"] < last_candle_5["close"]:
-            if (last_candle_2["close"] - last_candle["close"] >= config.CANDLE_DIFF and last_candle_3["close"] - last_candle_2["close"] >= config.CANDLE_DIFF and last_candle_4["close"] - last_candle_3["close"] >= config.CANDLE_DIFF and last_candle_5["close"] - last_candle_4["close"] >= config.CANDLE_DIFF):
+        elif  last_candle["close"] < last_candle_5["close"]:
+            if last_candle_5["close"] - last_candle["close"] >= config.CANDLE_DIFF:
                 condition = "SELL"
         if condition is None:
             return
