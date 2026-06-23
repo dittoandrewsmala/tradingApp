@@ -55,7 +55,7 @@ class CandleBuilder:
             self.current["close"] = price
             self.current["volume"] += volume
 
-        return None
+        return self.current
 
 
 # ================= STRATEGY =================

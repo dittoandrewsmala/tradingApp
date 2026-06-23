@@ -78,16 +78,19 @@ def on_tick(price, volume,open,low,high,close):
     if  checkLot and len(strategy.candles) >= 5  and not isTradeActive :
         
         last_candle = strategy.candles[-1]
+        last_candle_2 = strategy.candles[-2]
+        last_candle_3 = strategy.candles[-3]
+        last_candle_4 = strategy.candles[-4]
         last_candle_5 = strategy.candles[-5]
         
 
         trade.session_token=broker.session
         
         condition = None
-        if   last_candle["close"] > last_candle_5["close"]:
-            if last_candle["close"] - last_candle_5["close"] >=config.CANDLE_DIFF:
+        if   last_candle["close"] > last_candle_2["close"] and last_candle_2["close"] > last_candle_3["close"] and last_candle_3["close"] > last_candle_4["close"] and last_candle_4["close"] > last_candle_5["close"]:
+            if last_candle["close"] - last_candle_5["close"] >= config.CANDLE_DIFF:
                 condition = "BUY"
-        elif  last_candle["close"] < last_candle_5["close"]:
+        elif  last_candle["close"] < last_candle_2["close"] and last_candle_2["close"] < last_candle_3["close"] and last_candle_3["close"] < last_candle_4["close"] and last_candle_4["close"] < last_candle_5["close"]:
             if last_candle_5["close"] - last_candle["close"] >= config.CANDLE_DIFF:
                 condition = "SELL"
         if condition is None:
