@@ -168,8 +168,7 @@ def on_tick(price, volume, open, low, high, close):
         ord_numer, profitOrLoss = trade.on_signal(condition, price, lotIndex)
         
         if profitOrLoss in ["PROFIT", "LOSS"]:
-            if hasattr(strategy, 'reset'):
-                strategy.reset()
+            candles.clear()
                 
         if profitOrLoss == "PROFIT":
              lotIndex = 0
