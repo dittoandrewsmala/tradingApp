@@ -425,7 +425,7 @@ class Order:
 
         # Base target and trailing management
         target = entry_price + 1.5  
-        stop_loss = entry_price - 5
+        stop_loss = entry_price - 2
        
         exit_price = None
         profitOrLoss = "LOSS"
