@@ -38,7 +38,7 @@ PAPER_MODE = False
 
 CAPITAL = 20000
 RISK_PERCENT = 1
-CANDLE_DIFF= 4
+CANDLE_DIFF= 7
 
 stop_target_counter=1
 
