@@ -422,7 +422,7 @@ class Order:
             return None, None
 
         # Base target and trailing management
-        target = entry_price + self.target_arr[lotIndex]
+        target = entry_price + self.target_arr[lotIndex]+5
         stop_loss = entry_price - self.stop_loss_arr[lotIndex]
        
         exit_price = None
@@ -439,7 +439,10 @@ class Order:
                 print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
 
                 # Trailing Stop Loss Mechanism
-                if ltp >= target:
+                if ltp > self.target_arr[lotIndex]:
+                    target = ltp + self.target_arr[lotIndex]
+                    stop_loss = ltp -1
+                elif ltp >= target:
                     for attempt in range(25):
                         exit_id = self.exit_entry(side, symbol, qty)
                         exit_price = self.wait_for_fill(exit_id)
