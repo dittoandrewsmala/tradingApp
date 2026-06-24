@@ -34,8 +34,8 @@ ord_numer = None
 
 # --- Strategy Optimization Parameters ---
 RSI_PERIOD = 14
-RSI_OVERBOUGHT = 65
-RSI_OVERSOLD = 35
+RSI_OVERBOUGHT = 60
+RSI_OVERSOLD = 40
 MAX_LOOKBACK_CANDLES = 4  # Maximum candles to wait for a pullback confirmation
 
 rsi_candles = deque(maxlen=RSI_PERIOD + 1) 
