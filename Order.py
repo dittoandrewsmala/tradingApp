@@ -15,7 +15,7 @@ class Order:
         self.token_cache = {}
         self.total_pnl = 0
         self.max_loss = -2000
-        self.lotnumbers = [1,1,3,5,8] 
+        self.lotnumbers = [1,2,4,7,12]  
         self.target_arr = [2,3,4,5,6]  
         self.stop_loss_arr = [2,3,4,5,6]
     # ---------------- API ----------------
@@ -406,7 +406,7 @@ class Order:
         # ✅ BLOCK if max loss already hit
         if self.total_pnl <= self.max_loss:
             print("⛔ Trading blocked. Max loss reached.")
-            return None, None
+            #return None, None
         
         
         
