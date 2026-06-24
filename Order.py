@@ -15,11 +15,9 @@ class Order:
         self.token_cache = {}
         self.total_pnl = 0
         self.max_loss = -2000
-        self.lotnumbers = [1,3,6,9,12,15,30,50] 
-         
-        self.target_arr = [1,3,6,9,12,6,9,12]  
-        self.stop_loss_arr = [1,2,5,5,7,6,9,12]
-
+        self.lotnumbers = [1,1,3,5,8] 
+        self.target_arr = [2,3,4,5,6]  
+        self.stop_loss_arr = [2,3,4,5,6]
     # ---------------- API ----------------
     def api(self, url, jdata):
         headers = {"Content-Type": "application/json"}
@@ -414,7 +412,7 @@ class Order:
         
         
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=520
+        
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
             return None, None
@@ -424,8 +422,8 @@ class Order:
             return None, None
 
         # Base target and trailing management
-        target = entry_price + 1.5  
-        stop_loss = entry_price - 2
+        target = entry_price + self.target_arr[lotIndex]
+        stop_loss = entry_price - self.stop_loss_arr[lotIndex]
        
         exit_price = None
         profitOrLoss = "LOSS"
