@@ -16,6 +16,7 @@ class Order:
         self.total_pnl = 0
         self.max_loss = -2000
         self.lotnumbers = [1,2,4,7,12]  
+
         self.target_arr = [2,3,4,5,6]  
         self.stop_loss_arr = [2,3,4,5,6]
     # ---------------- API ----------------
@@ -406,7 +407,7 @@ class Order:
         # ✅ BLOCK if max loss already hit
         if self.total_pnl <= self.max_loss:
             print("⛔ Trading blocked. Max loss reached.")
-            #return None, None
+            return None, None
         
         
         
@@ -438,13 +439,10 @@ class Order:
 
                 print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
 
-                if ltp >= target:
-                    for attempt in range(25):
-                        exit_id = self.exit_entry(side, symbol, qty)
-                        exit_price = self.wait_for_fill(exit_id)
-                        if exit_price is not None:
-                            break
-                    break
+                # Trailing Stop Loss Mechanism
+                if ltp > self.target_arr[lotIndex]:
+                    stop_loss = max(stop_loss, ltp - 1)
+                    target = ltp + self.target_arr[lotIndex]
                 elif ltp <= stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
                     for attempt in range(25):
