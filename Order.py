@@ -15,7 +15,7 @@ class Order:
         self.token_cache = {}
         self.total_pnl = 0
         self.max_loss = -2000
-        self.lotnumbers = [1,2,4,7,12]  
+        self.lotnumbers = [1,2,4,7,10]  
 
         self.target_arr = [2,3,4,5,6]  
         self.stop_loss_arr = [2,3,4,5,6]
@@ -440,10 +440,10 @@ class Order:
                 print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
 
                 # Trailing Stop Loss Mechanism
-                if ltp > self.target_arr[lotIndex]:
+                if ltp >= target:
                     stop_loss = max(stop_loss, ltp - 1)
                     target = ltp + self.target_arr[lotIndex]
-                elif ltp <= stop_loss:
+                elif ltp < stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
                     for attempt in range(25):
                         exit_id = self.exit_entry(side, symbol, qty)
