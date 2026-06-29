@@ -441,7 +441,7 @@ class Order:
 
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
-                    stop_loss = max(stop_loss, ltp - 1)
+                    stop_loss = max(stop_loss, ltp - .2)
                     target = ltp + self.target_arr[lotIndex]
                 elif ltp < stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
