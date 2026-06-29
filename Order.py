@@ -217,9 +217,9 @@ class Order:
         self.token_cache = {}
         self.total_pnl = 0
         self.max_loss = -2000
-        self.lotnumbers = [1,3,5,9,9,9,12,20]  
-        self.target_arr = [1,2,5,5,7,6,9,12]  
-        self.stop_loss_arr = [1,2,5,5,7,6,9,12]
+        self.lotnumbers = [1,2,4,7,12]  
+        self.target_arr = [2,3,4,5,6]  
+        self.stop_loss_arr = [2,3,4,5,6]
 
     # ---------------- API ----------------
     def api(self, url, jdata):
@@ -413,7 +413,7 @@ class Order:
         
         
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        
+        print(f"💼Qty={qty}")
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
             return None, None
