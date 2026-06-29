@@ -413,6 +413,7 @@ class Order:
         
         
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
+        qty=65
         print(f"💼Qty={qty}")
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
