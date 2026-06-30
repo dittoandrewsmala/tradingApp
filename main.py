@@ -167,7 +167,7 @@ def on_tick(price, volume, open, low, high, close):
         if profitOrLoss in ["PROFIT", "LOSS"]:
             active_setup = None
             setup_timer = 0
-            candles.clear()
+            
                 
         if profitOrLoss == "PROFIT":
              lotIndex = 0
