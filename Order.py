@@ -413,7 +413,6 @@ class Order:
         
         
         qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
-        qty=65
         print(f"💼Qty={qty}")
         entry_id = self.place_entry(side, symbol, qty)
         if not entry_id:
@@ -424,9 +423,10 @@ class Order:
             return None, None
 
         # Base target and trailing management
-        target = entry_price + self.target_arr[lotIndex]
-        stop_loss = entry_price - self.stop_loss_arr[lotIndex]
-       
+        #target = entry_price + self.target_arr[lotIndex]
+        #stop_loss = entry_price - self.stop_loss_arr[lotIndex]
+        target = entry_price + 5
+        stop_loss = entry_price - 5
         exit_price = None
         profitOrLoss = "LOSS"
 
@@ -443,7 +443,7 @@ class Order:
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
                     stop_loss = max(stop_loss, ltp - .2)
-                    target = ltp + self.target_arr[lotIndex]
+                    target = ltp + 5
                 elif ltp < stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
                     for attempt in range(25):
