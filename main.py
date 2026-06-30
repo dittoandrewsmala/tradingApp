@@ -20,7 +20,7 @@ broker = Broker()
 broker.login()
 position = Position()
 nifty_token = broker.get_nifty_token()
- 
+
 # Global Strategy Management Variables
 CANDLE_TIME_FRAME = 10
 builder = CandleBuilder(CANDLE_TIME_FRAME)
@@ -43,6 +43,7 @@ candles = deque(maxlen=100)
 # Persistent memory state machine tracking
 active_setup = None   # Options: None, "BUY_STREAK_CONFIRMED", "SELL_STREAK_CONFIRMED"
 setup_timer = 0       # Tracks how many candles remain before a setup expires
+current_candle_open = None  # Safely preserves the entry anchor price point
 
 if not signalStarted:
     logger.printD("🚀 Starting signal generation with EMA filters...")
@@ -68,43 +69,49 @@ def calculate_ema(history, period):
 
 
 def on_tick(price, volume, open, low, high, close):
-    global signalStarted, lotIndex, isTradeActive, ord_numer, active_setup, setup_timer
+    global signalStarted, lotIndex, isTradeActive, ord_numer, active_setup, setup_timer, current_candle_open
     
     candle = builder.update(price, 1, open, low, high, close)
     
     if candle:
-        # Prevent duplicate ticks from pushing identical candle data
+        # Check if a new candle has officially started
+        is_new_candle = False
         if candles:
             last_candle_sig = (candles[-1]['open'], candles[-1]['high'], candles[-1]['low'])
             new_candle_sig = (candle['open'], candle['high'], candle['low'])
             
             if last_candle_sig == new_candle_sig:
-                candles[-1] = candle 
+                candles[-1] = candle  # Update current live candle
             else:
-                candles.append(candle)
-                # Count down the validation window timer when a candle officially finishes
-                if active_setup is not None:
-                    setup_timer -= 1
-                    if setup_timer <= 0:
-                        print("⏱️ Pullback tracking window expired without confirmation. Resetting setup.")
-                        active_setup = None
+                candles.append(candle) # Append new closed candle to history
+                is_new_candle = True
         else:
             candles.append(candle)
+            is_new_candle = True
 
-    # Need enough historical queue depth for computing the 50 EMA reliable filter
+        # Keep track of the opening level of the current running candle
+        current_candle_open = candle["open"]
+
+        # Handle expiration timers only when a bar transitions/closes
+        if is_new_candle and active_setup is not None:
+            setup_timer -= 1
+            if setup_timer <= 0:
+                print("⏱️ Pullback tracking window expired without confirmation. Resetting setup.")
+                active_setup = None
+
+    # Ensure we have enough data history to calculate the indicators
     if len(candles) >= EMA_SLOW_PERIOD and not isTradeActive:
         
         # Calculate Moving Averages
         ema20 = calculate_ema(list(candles), EMA_FAST_PERIOD)
         ema50 = calculate_ema(list(candles), EMA_SLOW_PERIOD)
         
-        # Pull candle structures cleanly
-        c1 = candles[-1]   # Present/Live active forming candle
-        c2 = candles[-2]   # Prior closed candle
+        # Reference past fully completed historic bars cleanly
+        c2 = candles[-2]   # Last fully closed candle
         c3 = candles[-3]
         c4 = candles[-4]
         c5 = candles[-5]
-        c6 = candles[-6]   # Oldest check point
+        c6 = candles[-6]   # 5th closed candle back
         
         condition = None
         
@@ -123,9 +130,12 @@ def on_tick(price, volume, open, low, high, close):
                 print(f"🔥 Bearish Streak Confirmed! Waiting for confirmation breakdown. EMA20: {ema20:.2f} | EMA50: {ema50:.2f}")
                 
         # --- STEP 2: Persistent Evaluation of the Trigger Loop (With EMA Checks) ---
+        # Safeguard anchor value if tick calculation starts before candle initialization complete
+        anchor_price = current_candle_open if current_candle_open is not None else candles[-1]["open"]
+
         if active_setup == "BUY_STREAK_CONFIRMED":
-            # Valid confirmation bounce: price moving above the current tick's opening level
-            if price > c1["open"]: 
+            # Valid confirmation bounce: price moving above the candle's opening level
+            if price > anchor_price: 
                 if ema20 > ema50:
                     condition = "BUY"
                     active_setup = None  # Reset tracking state machine
@@ -134,8 +144,8 @@ def on_tick(price, volume, open, low, high, close):
                     active_setup = None
 
         elif active_setup == "SELL_STREAK_CONFIRMED":
-            # Valid confirmation bounce: price dropping below the current tick's opening level
-            if price < c1["open"]:
+            # Valid confirmation bounce: price dropping below the candle's opening level
+            if price < anchor_price:
                 if ema20 < ema50:
                     condition = "SELL"
                     active_setup = None  # Reset tracking state machine
@@ -153,8 +163,10 @@ def on_tick(price, volume, open, low, high, close):
         isTradeActive = True
         ord_numer, profitOrLoss = trade.on_signal(condition, price, lotIndex)
         
+        # FIX: Resetting memory state without clearing candle data 
         if profitOrLoss in ["PROFIT", "LOSS"]:
-            candles.clear()
+            active_setup = None
+            setup_timer = 0
                 
         if profitOrLoss == "PROFIT":
              lotIndex = 0
