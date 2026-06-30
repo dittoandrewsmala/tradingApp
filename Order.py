@@ -443,7 +443,7 @@ class Order:
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
                     stop_loss = max(stop_loss, ltp - .2)
-                    target = ltp + 5
+                    target = ltp + 2
                 elif ltp < stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
                     for attempt in range(25):
