@@ -403,7 +403,7 @@ class Order:
 
     # ---------------- MAIN EXECUTION ----------------
     # ---------------- MAIN EXECUTION ----------------
-    def submit_order(self, side, symbol, lotIndex, ltp):
+    def submit_order(self, side, symbol, lotIndex, ltp,difference):
         # ✅ BLOCK if max loss already hit
         if self.total_pnl <= self.max_loss:
             print("⛔ Trading blocked. Max loss reached.")
@@ -422,11 +422,9 @@ class Order:
         if not entry_price:
             return None, None
 
-        # Base target and trailing management
-        #target = entry_price + self.target_arr[lotIndex]
-        #stop_loss = entry_price - self.stop_loss_arr[lotIndex]
-        target = entry_price + self.target_arr[lotIndex]
-        stop_loss = entry_price - self.stop_loss_arr[lotIndex]
+        
+        target = entry_price + difference
+        stop_loss = entry_price - difference
         exit_price = None
         profitOrLoss = "LOSS"
 
@@ -442,8 +440,8 @@ class Order:
 
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
-                    stop_loss = max(stop_loss, ltp - .2)
-                    target = ltp + 2
+                    stop_loss = max(stop_loss, ltp - 1)
+                    target = ltp + difference
                 elif ltp < stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
                     for attempt in range(25):

@@ -1,15 +1,10 @@
-from collections import deque
-from datetime import datetime, time, timezone
-import logging
-import sys
+from datetime import datetime, time, timedelta
 import pytz
-
-import config
 from broker import Broker
 from logger import Logger
-from Postion import Position 
+
 from risk_manager import RiskManager
-from strategy import strategy, CandleBuilder
+from strategy import CandleBuilder
 from trade_manager import TradeManager
 from websocket_feed import MarketFeed
 
@@ -17,13 +12,29 @@ logger = Logger()
 
 # Initialize components
 broker = Broker()
-broker.login()
-position = Position()
-nifty_token = broker.get_nifty_token()
+broker.setLogin()
+
+
+# --- Single Stock Configuration (Tata Power) ---
+STOCK_NAME = 'TATAPOWER'
+STOCK_TOKEN = '3426'  # Standard NSE token for Tata Power
+
+# --- Single Asset Tracking Structure ---
+asset_state = {
+    "name": STOCK_NAME,
+    "last_price": None,
+    "anchors": {
+        time(9, 15): {"open": None, "low": None, "high": None, "close": None, "direction": None},
+        time(9, 20): {"open": None, "low": None, "high": None, "close": None, "direction": None},
+        time(9, 25): {"open": None, "low": None, "high": None, "close": None, "direction": None},
+        time(9, 35): {"open": None, "low": None, "high": None, "close": None, "direction": None},
+    },
+    "history": {},  # Remembers all minutes for fallback searching
+    "trade_triggered": False,
+    "builder": CandleBuilder(60)  
+}
 
 # Global Strategy Management Variables
-CANDLE_TIME_FRAME = 10
-builder = CandleBuilder(CANDLE_TIME_FRAME)
 risk = RiskManager()
 trade = TradeManager(broker, risk)
 
@@ -32,156 +43,124 @@ lotIndex = 0
 signalStarted = False
 ord_numer = None
 
-# --- Strategy Optimization Parameters ---
-EMA_FAST_PERIOD = 20
-EMA_SLOW_PERIOD = 50
-MAX_LOOKBACK_CANDLES = 4  # Maximum candles to wait for a pullback confirmation
+# Initialized Strategy Control Variables Globally to avoid reference errors
+diffFlag = False
+directionFlag = False
+highest_high = None
+lowest_low = None
+difference = None
+condition = None 
 
-# Increased queue maxlen to accommodate computing the 50 EMA accurately
-candles = deque(maxlen=100) 
-
-# Persistent memory state machine tracking
-active_setup = None   # Options: None, "BUY_STREAK_CONFIRMED", "SELL_STREAK_CONFIRMED"
-setup_timer = 0       # Tracks how many candles remain before a setup expires
-current_candle_open = None  # Safely preserves the entry anchor price point
+IST = pytz.timezone('Asia/Kolkata')
 
 if not signalStarted:
-    logger.printD("🚀 Starting signal generation with EMA filters...")
+    logger.printD(f"🚀 Starting Advanced Anchor OHL Strategy for: {STOCK_NAME}")
     signalStarted = True
-    choice = input("Do want to give index value ? ").strip()
+    choice = input("Do you want to give index value? ").strip()
     if choice.lower() == "yes":
         lotIndex = int(input("Enter lot index (0, 1, 2, ...): ").strip())
 
 
-def calculate_ema(history, period):
-    """Calculates Exponential Moving Average (EMA) from close prices."""
-    if len(history) < period:
-        return history[-1]['close'] if history else 0.0
-    
-    closes = [c['close'] for c in history]
-    # Seed with SMA
-    ema = sum(closes[:period]) / period
-    multiplier = 2 / (period + 1)
-    
-    for close_price in closes[period:]:
-        ema = (close_price - ema) * multiplier + ema
-    return ema
-
-
-def on_tick(price, volume, open, low, high, close):
-    global signalStarted, lotIndex, isTradeActive, ord_numer, active_setup, setup_timer, current_candle_open
-    
-    candle = builder.update(price, 1, open, low, high, close)
-    
-    if candle:
-        # Check if a new candle has officially started
-        is_new_candle = False
-        if candles:
-            last_candle_sig = (candles[-1]['open'], candles[-1]['high'], candles[-1]['low'])
-            new_candle_sig = (candle['open'], candle['high'], candle['low'])
+def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
+    global isTradeActive, difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
             
-            if last_candle_sig == new_candle_sig:
-                candles[-1] = candle  # Update current live candle
-            else:
-                candles.append(candle) # Append new closed candle to history
-                is_new_candle = True
-        else:
-            candles.append(candle)
-            is_new_candle = True
-
-        # Keep track of the opening level of the current running candle
-        current_candle_open = candle["open"]
-
-        # Handle expiration timers only when a bar transitions/closes
-        if is_new_candle and active_setup is not None:
-            setup_timer -= 1
-            if setup_timer <= 0:
-                print("⏱️ Pullback tracking window expired without confirmation. Resetting setup.")
-                active_setup = None
-
-    # Ensure we have enough data history to calculate the indicators
-    if len(candles) >= EMA_SLOW_PERIOD and not isTradeActive:
-        
-        # Calculate Moving Averages
-        ema20 = calculate_ema(list(candles), EMA_FAST_PERIOD)
-        ema50 = calculate_ema(list(candles), EMA_SLOW_PERIOD)
-        
-        # Reference past fully completed historic bars cleanly
-        c2 = candles[-2]   # Last fully closed candle
-        c3 = candles[-3]
-        c4 = candles[-4]
-        c5 = candles[-5]
-        c6 = candles[-6]   # 5th closed candle back
-        
-        condition = None
-        
-        # --- STEP 1: Scan for fresh streaks ONLY if we aren't already tracking one ---
-        if active_setup is None:
-            is_bullish_streak = (c2["close"] > c3["close"] > c4["close"] > c5["close"] > c6["close"]) and (c2["close"] - c6["close"] >= config.CANDLE_DIFF)
-            is_bearish_streak = (c2["close"] < c3["close"] < c4["close"] < c5["close"] < c6["close"]) and (c6["close"] - c2["close"] >= config.CANDLE_DIFF)
+    # Track live price inside state structure
+    asset_state["last_price"] = price
+    
+    candle = asset_state["builder"].update(price, volume, open_val, low_val, high_val, close_val)
+    now_ist = datetime.now(IST).time()
+    
+    # -----------------------------------------------------------------
+    # STEP 1: Process Target Anchor Bars when they Close
+    # -----------------------------------------------------------------
+    if time(9, 15) <= now_ist <= time(9, 26):   
+        if candle is not None:
+            candle_open_time = candle['time'].time() 
             
-            if is_bullish_streak:
-                active_setup = "BUY_STREAK_CONFIRMED"
-                setup_timer = MAX_LOOKBACK_CANDLES
-                print(f"🔥 Bullish Streak Confirmed! Waiting for confirmation bounce. EMA20: {ema20:.2f} | EMA50: {ema50:.2f}")
-            elif is_bearish_streak:
-                active_setup = "SELL_STREAK_CONFIRMED"
-                setup_timer = MAX_LOOKBACK_CANDLES
-                print(f"🔥 Bearish Streak Confirmed! Waiting for confirmation breakdown. EMA20: {ema20:.2f} | EMA50: {ema50:.2f}")
-                
-        # --- STEP 2: Persistent Evaluation of the Trigger Loop (With EMA Checks) ---
-        # Safeguard anchor value if tick calculation starts before candle initialization complete
-        anchor_price = current_candle_open if current_candle_open is not None else candles[-1]["open"]
-
-        if active_setup == "BUY_STREAK_CONFIRMED":
-            # Valid confirmation bounce: price moving above the candle's opening level
-            if price > anchor_price: 
-                if ema20 > ema50:
-                    condition = "BUY"
-                    active_setup = None  # Reset tracking state machine
-                else:
-                    print(f"⚠️ BUY blocked. Trend is not Bullish (EMA20: {ema20:.2f} <= EMA50: {ema50:.2f})")
-                    active_setup = None
-
-        elif active_setup == "SELL_STREAK_CONFIRMED":
-            # Valid confirmation bounce: price dropping below the candle's opening level
-            if price < anchor_price:
-                if ema20 < ema50:
-                    condition = "SELL"
-                    active_setup = None  # Reset tracking state machine
-                else:
-                    print(f"⚠️ SELL blocked. Trend is not Bearish (EMA20: {ema20:.2f} >= EMA50: {ema50:.2f})")
-                    active_setup = None
-
-        # --- STEP 3: Broker Execution Handler ---
-        if condition is None:
-            return
+            # Build raw history for fallback searching
+            direction = "UP" if candle["close"] >= candle["open"] else "DOWN"
+            candle_data = {
+                "open": candle["open"], "low": candle["low"], 
+                "high": candle["high"], "close": candle["close"], "direction": direction
+            }
+            asset_state["history"][candle_open_time] = candle_data
             
-        trade.session_token = broker.session
-        print(f"🚦 Execution Verification Cleared: Sending {condition} Signal to Broker | EMA20: {ema20:.2f} vs EMA50: {ema50:.2f}")
+            # Map straight to assigned static anchors if matching
+            if candle_open_time in asset_state["anchors"]:
+                asset_state["anchors"][candle_open_time].update(candle_data)
+    
+    # -----------------------------------------------------------------
+    # STEP 2: Value Range Setup (9:27 AM - 9:30 AM)
+    # -----------------------------------------------------------------
+    if time(9, 27) <= now_ist <= time(9, 30) and not diffFlag:
+        anchor_keys = list(asset_state["anchors"].keys())
+        a15 = asset_state["anchors"][anchor_keys[0]]
+        a20 = asset_state["anchors"][anchor_keys[1]]
+        a25 = asset_state["anchors"][anchor_keys[2]]
         
+        if (a15 and a20 and a25 and 
+            None not in (a15["high"], a20["high"], a25["high"], a15["low"], a20["low"], a25["low"])):
+
+            highest_high = max(a15["high"], a20["high"], a25["high"])
+            lowest_low = min(a15["low"], a20["low"], a25["low"])
+            difference = highest_high - lowest_low
+            
+            # Calculated as a ratio of the absolute trading range relative to the price
+            percentage = (difference / price) * 100
+            diffFlag = True  
+            
+            print(f"✅ Range Formed -> High: {highest_high} | Low: {lowest_low} | Diff: {difference}")
+            print(f"📊 Range Percentage Size: {percentage:.3f}%")
+            
+            if percentage >= 0.75:
+                print("⚠️ Volatility range is too wide (>= 0.75%). Exiting strategy context for safety.")
+                exit(0)
+
+    # -----------------------------------------------------------------
+    # STEP 3: Breakout Detection (9:31 AM - 10:00 AM)
+    # -----------------------------------------------------------------
+    # Changed 'not diffFlag' to 'diffFlag' so this block actually runs after values are found
+    if time(9, 31) <= now_ist <= time(10, 00) and diffFlag and not asset_state["trade_triggered"]:
+        if price >= highest_high:
+            directionFlag = True
+            condition = "BUY"
+        elif price <= lowest_low:
+            directionFlag = True
+            condition = "SELL"
+
+    # -----------------------------------------------------------------
+    # STEP 4: Hardstop Strategy Expiration
+    # -----------------------------------------------------------------
+    if now_ist >= time(10, 5):
+        print("⏰ Time limit reached (10:05 AM). Shutting down engine pipeline.")
+        exit(0)
+    
+    # -----------------------------------------------------------------
+    # STEP 5: Order Execution Control Block
+    # -----------------------------------------------------------------
+    if directionFlag and not isTradeActive and condition is not None:
+        directionFlag = False  # Reset flag immediately to block micro-tick spam loops
         isTradeActive = True
-        ord_numer, profitOrLoss = trade.on_signal(condition, price, lotIndex)
+        asset_state["trade_triggered"] = True
         
-        # FIX: Resetting memory state without clearing candle data 
-        if profitOrLoss in ["PROFIT", "LOSS"]:
-            active_setup = None
-            setup_timer = 0
-            
-                
-        if profitOrLoss == "PROFIT":
-             lotIndex = 0
-        elif profitOrLoss == "LOSS":
-             lotIndex += 1
-             
-        if ord_numer is not None:
+        print(f"🎯 Breakout Confirmed: {STOCK_NAME} | Direction: {condition} at Price: {price}")
+        
+        try:
+            trade.session_token = broker.session
+            ord_numer, profitOrLoss = trade.on_signal(condition, price, lotIndex,STOCK_NAME,difference)
+            print("🚀 Execution Order Successfully Conveyed to Broker.")
+        except Exception as e:
+            print(f"❌ Order execution failure: {e}")
+            asset_state["trade_triggered"] = False  # Fallback to retry if order failed structurally
+        finally:
             isTradeActive = False
             ord_numer = None
 
 
+# --- WebSocket Connection Setup for Single Token ---
 feed = MarketFeed(
     session_token=broker.session,
-    symbol_token=nifty_token,
-    callback=on_tick
+    symbol_token=STOCK_TOKEN,  
+    callback=on_tick_multi_asset
 )
 feed.start()

@@ -19,43 +19,67 @@ class CandleBuilder:
         self.current = None
         self.last_bucket = None
 
-    def update(self, price, volume, open, low, high, close):
+    def update(self, price, volume, open_val, low_val, high_val, close_val):
+        """
+        Updates the current live candle. 
+        Returns a completed candle dictionary ONLY when the interval changes; 
+        otherwise returns None.
+        """
         now = datetime.now(pytz.timezone("Asia/Kolkata"))
         bucket = int(now.timestamp() // self.interval)
+
+        # 1. Get clean datetime at minute floor
+        bucket_start_dt = datetime.fromtimestamp(bucket * self.interval, pytz.timezone("Asia/Kolkata"))
+        
+        # 2. Extract native time object (compatible with main script logic)
+        candle_time_obj = bucket_start_dt.time()
 
         if self.last_bucket is None:
             self.last_bucket = bucket
 
+        # --- SCENARIO 1: A new minute has started ---
         if bucket != self.last_bucket:
-            finished = self.current
+            finished = self.current  # Capture the completed candle
 
+            # Create a brand new 1-minute candle starting with this tick's data
             self.current = {
-                "open": open ,
-                "high": high ,
-                "low": low ,
-                "close": close ,
+                "time": bucket_start_dt, # Keeps original datetime structure intact
+                "open": price,
+                "high": price,
+                "low": price,
+                "close": price,
                 "volume": volume
             }
 
             self.last_bucket = bucket
+            
+            # Only return the finished candle if it actually contains data
             if finished:
                 return finished
+            
+            return None
 
+        # --- SCENARIO 2: Still within the same minute ---
         if self.current is None:
+            # First tick initialization
             self.current = {
-                "open": open ,
-                "high": high ,
-                "low": low ,
-                "close": close,
+                "time": bucket_start_dt,
+                "open": price,
+                "high": price,
+                "low": price,
+                "close": price,
                 "volume": volume
             }
         else:
+            # Aggregate the updates inside the current minute
+            self.current["time"] = bucket_start_dt
             self.current["high"] = max(self.current["high"], price)
             self.current["low"] = min(self.current["low"], price)
             self.current["close"] = price
             self.current["volume"] += volume
 
-        return self.current
+        # Return None while the candle is still building
+        return None
 
 
 # ================= STRATEGY =================

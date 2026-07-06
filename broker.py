@@ -48,7 +48,11 @@ class Broker:
     
 
    
- 
+    def setLogin(self):
+        token = config.SMART_TOKEN
+        self.session = token
+        
+
     def login(self):
 
         # Start Flask server in background
@@ -117,7 +121,7 @@ class Broker:
             data = res.json()
         except ValueError:
             raise Exception("Failed to decode JSON response: " + res.text)
-        
+        print("Index List Response:", data)
         token = next(item["token"] for item in data["values"] if item["idxname"] == "Nifty 50")
         return  token
     
