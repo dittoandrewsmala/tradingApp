@@ -92,7 +92,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # STEP 2: Value Range Setup (9:27 AM - 9:30 AM)
     # -----------------------------------------------------------------
-    if time(9, 27) <= now_ist <= time(9, 30) and not diffFlag:
+    if time(9, 27) <= now_ist <= time(9, 32) and not diffFlag:
         anchor_keys = list(asset_state["anchors"].keys())
         a15 = asset_state["anchors"][anchor_keys[0]]
         a20 = asset_state["anchors"][anchor_keys[1]]
@@ -120,7 +120,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # STEP 3: Breakout Detection (9:31 AM - 10:00 AM)
     # -----------------------------------------------------------------
     # Changed 'not diffFlag' to 'diffFlag' so this block actually runs after values are found
-    if time(9, 31) <= now_ist <= time(10, 00) and diffFlag and not asset_state["trade_triggered"]:
+    if time(9, 34) <= now_ist <= time(10, 00) and diffFlag and not asset_state["trade_triggered"]:
         if price >= highest_high:
             directionFlag = True
             condition = "BUY"

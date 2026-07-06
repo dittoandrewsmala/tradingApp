@@ -20,7 +20,7 @@ class TradeManager:
         return strike
         
     # ---------- Generate Option Symbol ----------
-    def get_option_symbol(self, price, option_type,strike):
+    def get_option_symbol(self, price, option_type,strike,stockName):
 
 
         today = datetime.today()
@@ -45,13 +45,13 @@ class TradeManager:
             strike = atm - 100
         
         if option_type == "CE":
-            return f"NIFTY{expiry}C{strike}"
+            return f"{stockName}{expiry}C{strike}"
 
         if option_type == "PE":
-            return f"NIFTY{expiry}P{strike}"
+            return f"{stockName}{expiry}P{strike}"
 
     # ---------- Entry Logic ----------
-    def on_signal(self, signal, price,lotIndex):
+    def on_signal(self, signal, price,lotIndex,stockName,difference):
 
         #if self.position:
         #    return
@@ -62,14 +62,15 @@ class TradeManager:
         # BUY CALL OPTION
         if signal == "BUY":
             strike = self.getStrike(price)
-            symbol = self.get_option_symbol(price, "CE", strike)
+            symbol = self.get_option_symbol(price, "CE", strike,stockName)
             #lp_value = self.get_quotes(search_scrips_token)
             
             ordNum,profitOrLoss=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
                 symbol=symbol,
-                ltp=price
+                ltp=price,
+                difference=difference
             )
 
             self.current_symbol = symbol
@@ -80,13 +81,14 @@ class TradeManager:
         if signal == "SELL":
 
             strike = self.getStrike(price)
-            symbol = self.get_option_symbol(price, "PE", strike)
+            symbol = self.get_option_symbol(price, "PE", strike,stockName)
             
             ordNum,profitOrLoss=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
                 symbol=symbol,
-                ltp=price
+                ltp=price,
+                difference=difference
             )
             
 
