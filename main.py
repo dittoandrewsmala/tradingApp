@@ -149,6 +149,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
             trade.session_token = broker.session
             ord_numer, profitOrLoss = trade.on_signal(condition, price, lotIndex,STOCK_NAME,difference)
             print("🚀 Execution Order Successfully Conveyed to Broker.")
+            exit(0)
         except Exception as e:
             print(f"❌ Order execution failure: {e}")
             asset_state["trade_triggered"] = False  # Fallback to retry if order failed structurally
