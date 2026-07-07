@@ -1,0 +1,67 @@
+#Code aaded by Jaison on 7/7/2026
+#The OHL strategy (often called the Open-High-Low Open Equals Same breakout strategy) is highly popular for intraday equity trading. The core principle states:If Open = Low, buy long (bullish breakout momentum).If Open = High, sell short (bearish breakdown momentum).
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. GENERATE DUMMY INTRADAY DATA (Replace this block with your actual CSV or API data)
+np.random.seed(42)
+date_range = pd.date_range(start="2026-06-01 09:15:00", end="2026-07-05 15:30:00", freq="15min")
+df = pd.DataFrame(index=date_range)
+df = df[df.index.indexer_between_time("09:15", "15:30")] # Filter market hours
+
+# Simulating structural price data
+df['Open'] = 100.0 + np.random.normal(0, 0.5, len(df)).cumsum()
+df['High'] = df['Open'] + np.random.uniform(0, 1.2, len(df))
+df['Low'] = df['Open'] - np.random.uniform(0, 1.2, len(df))
+df['Close'] = np.random.uniform(df['Low'], df['High'], len(df))
+
+# 2. DATA ENGINEERING & STRATEGY LOGIC
+# Extract the date to group the intraday candles
+df['Date'] = df.index.date
+
+# Identify the very first candle of each trading day (Market Open)
+df['Is_Market_Open'] = ~df['Date'].duplicated(keep='first')
+
+# Map the daily Open, High, and Low values of the first candle back to all rows of that day
+first_candles = df[df['Is_Market_Open']]
+df['Daily_Open'] = df['Date'].map(first_candles.set_index('Date')['Open'])
+df['Daily_First_High'] = df['Date'].map(first_candles.set_index('Date')['High'])
+df['Daily_First_Low'] = df['Date'].map(first_candles.set_index('Date')['Low'])
+
+# Generate Signals based on the first candle parameters
+# Target a strict threshold or small delta to avoid floating point mismatch
+df['Signal'] = 0
+df.loc[(df['Is_Market_Open']) & (abs(df['Daily_Open'] - df['Daily_First_Low']) < 0.05), 'Signal'] = 1  # Long
+df.loc[(df['Is_Market_Open']) & (abs(df['Daily_Open'] - df['Daily_First_High']) < 0.05), 'Signal'] = -1 # Short
+
+# Forward fill signals so the position is held intraday until market close square-off
+df['Position'] = df.groupby('Date')['Signal'].ffill().fillna(0)
+
+# Force close position at the last intraday candle (EOD Square-off)
+df['Is_Market_Close'] = ~df['Date'].duplicated(keep='last')
+df.loc[df['Is_Market_Close'], 'Position'] = 0
+
+# 3. PERFORMANCE & LOG REVENUE LOGIC
+df['Market_Returns'] = df['Close'].pct_change()
+df['Strategy_Returns'] = df['Position'].shift(1) * df['Market_Returns']
+df['Strategy_Returns'] = df['Strategy_Returns'].fillna(0)
+
+# 4. ANALYSING STRATEGY WINNING DAYS
+daily_performance = df.groupby('Date')['Strategy_Returns'].sum().reset_index()
+daily_performance['PnL_Status'] = np.where(daily_performance['Strategy_Returns'] > 0, 'Win', 
+                                           np.where(daily_performance['Strategy_Returns'] < 0, 'Loss', 'Flat'))
+
+# Calculate Data Metrics
+total_days = len(daily_performance)
+winning_days = len(daily_performance[daily_performance['PnL_Status'] == 'Win'])
+losing_days = len(daily_performance[daily_performance['PnL_Status'] == 'Loss'])
+win_rate = (winning_days / total_days) * 100 if total_days > 0 else 0
+
+print("=== BACKTEST METRICS SUMMARY ===")
+print(f"Total Trading Days Assessed: {total_days}")
+print(f"Strategy Winning Days:      {winning_days}")
+print(f"Strategy Losing Days:       {losing_days}")
+print(f"Daily Win Rate Percentage:  {win_rate:.2f}%")
+print("================================")
