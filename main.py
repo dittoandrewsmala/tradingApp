@@ -96,7 +96,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # STEP 2: Value Range Setup (9:27 AM - 9:30 AM)
     # -----------------------------------------------------------------
-    if counter==3 and not diffFlag:
+    if counter==3 and not diffFlag and now_ist >= time(9, 35):
         print("⏳ Waiting for anchor candles to form (9:31 AM - 9:33 AM)...")   
         a15 = asset_state["anchors"][0]
         a20 = asset_state["anchors"][1]
