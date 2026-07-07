@@ -310,7 +310,7 @@ class Order:
         return None, None
 
     # ---------------- WAIT FOR FILL ----------------
-    def wait_for_fill(self, order_id, timeout=30):
+    def wait_for_fill(self, order_id, timeout=60):
         start = time.time()
 
         while time.time() - start < timeout:
