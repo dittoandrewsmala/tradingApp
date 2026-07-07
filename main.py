@@ -55,9 +55,9 @@ IST = pytz.timezone('Asia/Kolkata')
 if not signalStarted:
     logger.printD(f"🚀 Starting Advanced Anchor OHL Strategy for: {STOCK_NAME}")
     signalStarted = True
-    choice = input("Do you want to give index value? ").strip()
+    choice = input("Do you want to give index value yes or no ? ").strip()
     if choice.lower() == "yes":
-        lotIndex = int(input("Enter lot index (0, 1, 2, ...): ").strip())
+        lotIndex = int(input("Enter share size: ").strip())
 
 while True:
     now = datetime.now().time()
