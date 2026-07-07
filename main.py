@@ -2,7 +2,7 @@ from datetime import datetime, time, timedelta
 import pytz
 from broker import Broker
 from logger import Logger
-
+import time as tm
 from risk_manager import RiskManager
 from strategy import CandleBuilder
 from trade_manager import TradeManager
@@ -58,6 +58,13 @@ if not signalStarted:
     choice = input("Do you want to give index value? ").strip()
     if choice.lower() == "yes":
         lotIndex = int(input("Enter lot index (0, 1, 2, ...): ").strip())
+
+while True:
+    now = datetime.now().time()
+    if now >= time(9, 15):
+        print("Reached 9:15 AM")
+        break
+    tm.sleep(1)
 
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
