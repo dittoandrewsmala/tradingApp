@@ -69,11 +69,12 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     
     candle = asset_state["builder"].update(price, volume, open_val, low_val, high_val, close_val)
     now_ist = datetime.now(IST).time()
-    
+    print("⏳ time:", now_ist, "Price:", price, "Volume:", volume, "Open:", open_val, "Low:", low_val, "High:", high_val, "Close:", close_val)
     # -----------------------------------------------------------------
     # STEP 1: Process Target Anchor Bars when they Close
     # -----------------------------------------------------------------
-    if time(9, 15) <= now_ist <= time(9, 26):   
+    if time(9, 15) <= now_ist <= time(9, 26):
+        print("⏳ Waiting for anchor candles to form (9:15 AM - 9:25 AM)...")   
         if candle is not None:
             candle_open_time = candle['time'].time() 
             
@@ -93,6 +94,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # STEP 2: Value Range Setup (9:27 AM - 9:30 AM)
     # -----------------------------------------------------------------
     if time(9, 27) <= now_ist <= time(9, 32) and not diffFlag:
+        print("⏳ Waiting for anchor candles to form (9:27 AM - 9:32 AM)...")   
         anchor_keys = list(asset_state["anchors"].keys())
         a15 = asset_state["anchors"][anchor_keys[0]]
         a20 = asset_state["anchors"][anchor_keys[1]]
@@ -121,6 +123,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # Changed 'not diffFlag' to 'diffFlag' so this block actually runs after values are found
     if time(9, 34) <= now_ist <= time(10, 00) and diffFlag and not asset_state["trade_triggered"]:
+        print("⏳ Waiting for anchor candles to form (9:34 AM - 10:00 AM)...")   
         if price >= highest_high:
             directionFlag = True
             condition = "BUY"
@@ -131,7 +134,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # STEP 4: Hardstop Strategy Expiration
     # -----------------------------------------------------------------
-    if now_ist >= time(10, 5):
+    if now_ist >= time(10, 5) and directionFlag==True:
         print("⏰ Time limit reached (10:05 AM). Shutting down engine pipeline.")
         exit(0)
     
@@ -139,6 +142,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # STEP 5: Order Execution Control Block
     # -----------------------------------------------------------------
     if directionFlag and not isTradeActive and condition is not None:
+        print("⏳ directionFlag is True and no active trade. Preparing to execute order...")   
         directionFlag = False  # Reset flag immediately to block micro-tick spam loops
         isTradeActive = True
         asset_state["trade_triggered"] = True
