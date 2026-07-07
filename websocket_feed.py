@@ -42,8 +42,8 @@ class MarketFeed:
         elif "lp" in data:
             current_time = tm.time()
             now = datetime.now().time()
-            if now >= time(9, 30):
-                self.interval=5   
+            if now >= time(9, 35):
+                self.interval=5    
             # Check if 5 seconds have passed since the last callback trigger
             if current_time - self.last_processed_time >= self.interval:
                 ltp = float(data["lp"])

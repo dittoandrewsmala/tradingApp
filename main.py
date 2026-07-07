@@ -37,7 +37,7 @@ asset_state = {
 risk = RiskManager()
 trade = TradeManager(broker, risk)
 
-isTradeActive = False
+
 lotIndex = 1
 signalStarted = False
 ord_numer = None
@@ -68,7 +68,7 @@ while True:
 
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
-    global counter, isTradeActive, difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
+    global counter, difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
     
     # Track live price inside state structure
     asset_state["last_price"] = price
@@ -125,7 +125,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # Changed 'not diffFlag' to 'diffFlag' so this block actually runs after values are found
 
-    if diffFlag:
+    if diffFlag and now_ist >= time(9, 35):
         print("⏳ Waiting for anchor candles to form (9:34 AM - 10:00 AM)...")   
         if price >= highest_high:
             directionFlag = True
@@ -144,10 +144,9 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # STEP 5: Order Execution Control Block
     # -----------------------------------------------------------------
-    if directionFlag and not isTradeActive and condition is not None:
+    if directionFlag  and condition is not None:
         print("⏳ directionFlag is True and no active trade. Preparing to execute order...")   
         directionFlag = False  # Reset flag immediately to block micro-tick spam loops
-        isTradeActive = True
         asset_state["trade_triggered"] = True
         
         print(f"🎯 Breakout Confirmed: {STOCK_NAME} | Direction: {condition} at Price: {price}")
@@ -161,7 +160,6 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
             print(f"❌ Order execution failure: {e}")
             asset_state["trade_triggered"] = False  # Fallback to retry if order failed structurally
         finally:
-            isTradeActive = False
             ord_numer = None
 
 
