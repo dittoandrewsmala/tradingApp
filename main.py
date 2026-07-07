@@ -16,7 +16,7 @@ broker.setLogin()
 
 
 # --- Single Stock Configuration (Tata Power) ---
-STOCK_NAME = 'TATAPOWER'
+STOCK_NAME = 'TATAPOWER-EQ'
 STOCK_TOKEN = '3426'  # Standard NSE token for Tata Power
 
 # --- Single Asset Tracking Structure ---
@@ -24,10 +24,9 @@ asset_state = {
     "name": STOCK_NAME,
     "last_price": None,
     "anchors": {
-        time(9, 15): {"open": None, "low": None, "high": None, "close": None, "direction": None},
-        time(9, 20): {"open": None, "low": None, "high": None, "close": None, "direction": None},
-        time(9, 25): {"open": None, "low": None, "high": None, "close": None, "direction": None},
-        time(9, 35): {"open": None, "low": None, "high": None, "close": None, "direction": None},
+        0: {"open": None, "low": None, "high": None, "close": None, "direction": None},
+        1: {"open": None, "low": None, "high": None, "close": None, "direction": None},
+        2: {"open": None, "low": None, "high": None, "close": None, "direction": None}
     },
     "history": {},  # Remembers all minutes for fallback searching
     "trade_triggered": False,
@@ -39,7 +38,7 @@ risk = RiskManager()
 trade = TradeManager(broker, risk)
 
 isTradeActive = False
-lotIndex = 0
+lotIndex = 1
 signalStarted = False
 ord_numer = None
 
@@ -50,7 +49,7 @@ highest_high = None
 lowest_low = None
 difference = None
 condition = None 
-
+counter =0
 IST = pytz.timezone('Asia/Kolkata')
 
 if not signalStarted:
@@ -62,43 +61,39 @@ if not signalStarted:
 
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
-    global isTradeActive, difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
-            
+    global counter, isTradeActive, difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
+    
     # Track live price inside state structure
     asset_state["last_price"] = price
     
     candle = asset_state["builder"].update(price, volume, open_val, low_val, high_val, close_val)
     now_ist = datetime.now(IST).time()
     print("⏳ time:", now_ist, "Price:", price, "Volume:", volume, "Open:", open_val, "Low:", low_val, "High:", high_val, "Close:", close_val)
+    
     # -----------------------------------------------------------------
     # STEP 1: Process Target Anchor Bars when they Close
     # -----------------------------------------------------------------
-    if time(9, 15) <= now_ist <= time(9, 26):
-        print("⏳ Waiting for anchor candles to form (9:15 AM - 9:25 AM)...")   
-        if candle is not None:
-            candle_open_time = candle['time'].time() 
+    if time(9, 15) <= now_ist <= time(9, 30) and counter < 3:
+        print("⏳ Waiting for anchor candles to form (9:15 AM - 9:25 AM)...") 
+        # Build raw history for fallback searching
+        direction = "UP" if close_val >= open_val else "DOWN"
+        candle_data = {
+                "open": open_val, "low": low_val, 
+                "high": high_val, "close": close_val, "direction": direction
+        }
+        asset_state["anchors"][counter].update(candle_data)
+        counter += 1     
             
-            # Build raw history for fallback searching
-            direction = "UP" if candle["close"] >= candle["open"] else "DOWN"
-            candle_data = {
-                "open": candle["open"], "low": candle["low"], 
-                "high": candle["high"], "close": candle["close"], "direction": direction
-            }
-            asset_state["history"][candle_open_time] = candle_data
-            
-            # Map straight to assigned static anchors if matching
-            if candle_open_time in asset_state["anchors"]:
-                asset_state["anchors"][candle_open_time].update(candle_data)
-    
+
+
     # -----------------------------------------------------------------
     # STEP 2: Value Range Setup (9:27 AM - 9:30 AM)
     # -----------------------------------------------------------------
-    if time(9, 27) <= now_ist <= time(9, 32) and not diffFlag:
-        print("⏳ Waiting for anchor candles to form (9:27 AM - 9:32 AM)...")   
-        anchor_keys = list(asset_state["anchors"].keys())
-        a15 = asset_state["anchors"][anchor_keys[0]]
-        a20 = asset_state["anchors"][anchor_keys[1]]
-        a25 = asset_state["anchors"][anchor_keys[2]]
+    if counter==3 and not diffFlag:
+        print("⏳ Waiting for anchor candles to form (9:31 AM - 9:33 AM)...")   
+        a15 = asset_state["anchors"][0]
+        a20 = asset_state["anchors"][1]
+        a25 = asset_state["anchors"][2]
         
         if (a15 and a20 and a25 and 
             None not in (a15["high"], a20["high"], a25["high"], a15["low"], a20["low"], a25["low"])):
@@ -122,7 +117,8 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # STEP 3: Breakout Detection (9:31 AM - 10:00 AM)
     # -----------------------------------------------------------------
     # Changed 'not diffFlag' to 'diffFlag' so this block actually runs after values are found
-    if time(9, 34) <= now_ist <= time(10, 00) and diffFlag and not asset_state["trade_triggered"]:
+
+    if diffFlag:
         print("⏳ Waiting for anchor candles to form (9:34 AM - 10:00 AM)...")   
         if price >= highest_high:
             directionFlag = True

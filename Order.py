@@ -278,9 +278,7 @@ class Order:
 
     # ---------------- LTP ----------------
     def get_ltp(self, symbol):
-        token = self.get_token(symbol)
-        if not token:
-            return None
+        token = 3426
 
         for _ in range(5):
             jdata = {"uid": config.USER_ID, "exch": "NFO", "token": token}
@@ -310,7 +308,7 @@ class Order:
         return None, None
 
     # ---------------- WAIT FOR FILL ----------------
-    def wait_for_fill(self, order_id, timeout=60):
+    def wait_for_fill(self, order_id, timeout=120):
         start = time.time()
 
         while time.time() - start < timeout:
@@ -355,17 +353,15 @@ class Order:
         return res.get("norenordno")
 
     # ---------------- ENTRY ----------------
-    def place_entry(self, side, symbol, qty):
-        ltp = self.get_ltp(symbol)
-        if ltp is None:
-            return None
+    def place_entry(self, side, symbol, qty,price):
+        
 
-        price = round(ltp + 0.3, 2) if side == "B" else round(ltp - 0.3, 2)
+        price = round(price + 0.3, 2) if side == "B" else round(price - 0.3, 2)
 
         order = {
             "uid": config.USER_ID,
             "actid": config.USER_ID,
-            "exch": "NFO",
+            "exch": "NSE",
             "tsym": symbol,
             "qty": str(qty),
             "prd": "I",
@@ -403,18 +399,15 @@ class Order:
 
     # ---------------- MAIN EXECUTION ----------------
     # ---------------- MAIN EXECUTION ----------------
-    def submit_order(self, side, symbol, lotIndex, ltp,difference):
+    def submit_order(self, side, symbol, lotIndex, ltp,dif):
         # ✅ BLOCK if max loss already hit
         if self.total_pnl <= self.max_loss:
             print("⛔ Trading blocked. Max loss reached.")
-            return None, None
+            return None, None 
         
-        
-        
-        
-        qty = self.lotnumbers[lotIndex] * config.LOT_SIZE
+        qty = lotIndex
         print(f"💼Qty={qty}")
-        entry_id = self.place_entry(side, symbol, qty)
+        entry_id = self.place_entry(side, symbol, qty, ltp)
         if not entry_id:
             return None, None
 
@@ -423,8 +416,8 @@ class Order:
             return None, None
 
         
-        target = entry_price + difference
-        stop_loss = entry_price - difference
+        target = entry_price + dif
+        stop_loss = entry_price - dif
         exit_price = None
         profitOrLoss = "LOSS"
 
@@ -441,7 +434,7 @@ class Order:
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
                     stop_loss = max(stop_loss, ltp - 1)
-                    target = ltp + difference
+                    target = ltp + dif
                 elif ltp < stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
                     for attempt in range(25):

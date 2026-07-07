@@ -16,7 +16,7 @@ class TradeManager:
         self.current_symbol = None
 
     def getStrike(self, price):
-        strike = round(price / 50) * 50 
+        strike = round(price / 30) * 30 
         return strike
         
     # ---------- Generate Option Symbol ----------
@@ -51,7 +51,7 @@ class TradeManager:
             return f"{stockName}{expiry}P{strike}"
 
     # ---------- Entry Logic ----------
-    def on_signal(self, signal, price,lotIndex,stockName,difference):
+    def on_signal(self, signal, price,lotIndex,stockName,dif):
 
         #if self.position:
         #    return
@@ -61,19 +61,19 @@ class TradeManager:
 
         # BUY CALL OPTION
         if signal == "BUY":
-            strike = self.getStrike(price)
-            symbol = self.get_option_symbol(price, "CE", strike,stockName)
+            #strike = self.getStrike(price)
+            #symbol = self.get_option_symbol(price, "CE", strike,stockName)
             #lp_value = self.get_quotes(search_scrips_token)
             
             ordNum,profitOrLoss=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
-                symbol=symbol,
+                symbol=stockName,
                 ltp=price,
-                difference=difference
+                dif=dif
             )
 
-            self.current_symbol = symbol
+            #self.current_symbol = symbol
             self.risk.new_trade(price)
             #self.position = True
 
@@ -81,18 +81,18 @@ class TradeManager:
         if signal == "SELL":
 
             strike = self.getStrike(price)
-            symbol = self.get_option_symbol(price, "PE", strike,stockName)
+            #symbol = self.get_option_symbol(price, "PE", strike,stockName)
             
             ordNum,profitOrLoss=self.broker.place_order(
                 side="B",
                 lotIndex=lotIndex,
-                symbol=symbol,
+                symbol=stockName,
                 ltp=price,
-                difference=difference
+                dif=dif
             )
             
 
-            self.current_symbol = symbol
+            #self.current_symbol = symbol
             self.risk.new_trade(price)
             #self.position = True
         return ordNum,profitOrLoss
