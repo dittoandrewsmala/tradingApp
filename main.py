@@ -61,6 +61,7 @@ if not signalStarted:
 
 while True:
     now = datetime.now(IST).time()
+    print("⏳ Current IST Time:", now)
     if now >= time(9, 15):
         print("Reached 9:15 AM")
         break
