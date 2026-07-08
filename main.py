@@ -59,12 +59,7 @@ if not signalStarted:
     if choice.lower() == "yes":
         lotIndex = int(input("Enter share size: ").strip())
 
-while True:
-    now = datetime.now().time()
-    if now >= time(9, 15):
-        print("Reached 9:15 AM")
-        break
-    tm.sleep(1)
+
 
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
@@ -80,7 +75,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # STEP 1: Process Target Anchor Bars when they Close
     # -----------------------------------------------------------------
-    if time(9, 15) <= now_ist <= time(9, 30) and counter < 3:
+    if time(9, 15) <= now_ist <= time(9, 31) and counter < 3:
         print("⏳ Waiting for anchor candles to form (9:15 AM - 9:25 AM)...") 
         # Build raw history for fallback searching
         direction = "UP" if close_val >= open_val else "DOWN"
