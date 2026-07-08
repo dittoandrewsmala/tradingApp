@@ -51,7 +51,7 @@ difference = None
 condition = None 
 counter =0
 IST = pytz.timezone('Asia/Kolkata')
-
+print("⏳ Waiting for market open (9:15 AM IST)...")
 if not signalStarted:
     logger.printD(f"🚀 Starting Advanced Anchor OHL Strategy for: {STOCK_NAME}")
     signalStarted = True
