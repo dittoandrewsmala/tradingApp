@@ -51,7 +51,7 @@ class TradeManager:
             return f"{stockName}{expiry}P{strike}"
 
     # ---------- Entry Logic ----------
-    def on_signal(self, signal, price,lotIndex,stockName,dif):
+    def on_signal(self, signal, price,lotIndex,stockName,dif,stocktoken):
 
         #if self.position:
         #    return
@@ -70,7 +70,8 @@ class TradeManager:
                 lotIndex=lotIndex,
                 symbol=stockName,
                 ltp=price,
-                dif=dif
+                dif=dif,
+                stocktoken=stocktoken
             )
 
             #self.current_symbol = symbol
@@ -88,7 +89,8 @@ class TradeManager:
                 lotIndex=lotIndex,
                 symbol=stockName,
                 ltp=price,
-                dif=dif
+                dif=dif,
+                stocktoken=stocktoken
             )
             
 

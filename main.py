@@ -154,7 +154,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
         
         try:
             trade.session_token = broker.session
-            ord_numer, profitOrLoss = trade.on_signal(condition, price, lotIndex,STOCK_NAME,difference)
+            ord_numer, profitOrLoss = trade.on_signal(condition, price, lotIndex,STOCK_NAME,difference,STOCK_TOKEN)
             print("🚀 Execution Order Successfully Conveyed to Broker.")
             exit(0)
         except Exception as e:

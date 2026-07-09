@@ -277,11 +277,11 @@ class Order:
         return self.token_cache.get(symbol)
 
     # ---------------- LTP ----------------
-    def get_ltp(self, symbol):
-        token = 3426
+    def get_ltp(self, symbol,stocktoken):
+
 
         for _ in range(5):
-            jdata = {"uid": config.USER_ID, "exch": "NFO", "token": token}
+            jdata = {"uid": config.USER_ID, "exch": "NSE", "token": stocktoken}
             data = self.api(config.GET_QUOTES, jdata)
 
             if data and "lp" in data:
@@ -374,8 +374,8 @@ class Order:
         return self.place_order(order)
 
     # ---------------- EXIT ----------------
-    def exit_entry(self, side, symbol, qty):
-        ltp = self.get_ltp(symbol)
+    def exit_entry(self, side, symbol, qty,stocktoken):
+        ltp = self.get_ltp(symbol, stocktoken)
         if ltp is None:
             return None
 
@@ -399,7 +399,7 @@ class Order:
 
     # ---------------- MAIN EXECUTION ----------------
     # ---------------- MAIN EXECUTION ----------------
-    def submit_order(self, side, symbol, lotIndex, ltp,dif):
+    def submit_order(self, side, symbol, lotIndex, ltp,dif,stocktoken):
         # ✅ BLOCK if max loss already hit
         if self.total_pnl <= self.max_loss:
             print("⛔ Trading blocked. Max loss reached.")
@@ -424,12 +424,12 @@ class Order:
         try:
             while True:
                 time.sleep(1)
-                ltp = self.get_ltp(symbol)
-                
+                ltp = self.get_ltp(symbol,stocktoken)
+                print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
                 if ltp is None:
                     continue
 
-                print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
+                
 
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
@@ -438,7 +438,7 @@ class Order:
                 elif ltp < stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
                     for attempt in range(25):
-                        exit_id = self.exit_entry(side, symbol, qty)
+                        exit_id = self.exit_entry(side, symbol, qty,stocktoken)
                         exit_price = self.wait_for_fill(exit_id)
                         if exit_price is not None:
                             break
@@ -448,7 +448,7 @@ class Order:
             logger.printR(f"💥 Exception in trailing loop: {e}")
             # Emergency exit attempt
             for attempt in range(10):
-                exit_id = self.exit_entry(side, symbol, qty)
+                exit_id = self.exit_entry(side, symbol, qty,stocktoken)
                 exit_price = self.wait_for_fill(exit_id)
                 if exit_price is not None:
                     break
