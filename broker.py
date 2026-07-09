@@ -125,12 +125,12 @@ class Broker:
         token = next(item["token"] for item in data["values"] if item["idxname"] == "Nifty 50")
         return  token
     
-    def place_order(self, side, lotIndex,symbol,ltp,dif):
+    def place_order(self, side, lotIndex,symbol,ltp,dif,stocktoken):
 
              
         order.session_token = self.session 
         # delegate to Order class instance
-        orderId,profitOrLoss=order.submit_order(side, symbol, lotIndex,ltp,dif)
+        orderId,profitOrLoss=order.submit_order(side, symbol, lotIndex,ltp,dif,stocktoken)
         return orderId,profitOrLoss
 
     
