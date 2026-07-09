@@ -125,21 +125,22 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # STEP 3: Breakout Detection (9:31 AM - 10:00 AM)
     # -----------------------------------------------------------------
     # Changed 'not diffFlag' to 'diffFlag' so this block actually runs after values are found
-
     if diffFlag and now_ist >= time(9, 35):
-        print("⏳ Waiting for anchor candles to form (9:35 AM - 10:00 AM)..." + str(highest_high) + ", " + str(lowest_low) + ", " + str(price))   
+        print(f"🎯 Breakout Confirmed: {STOCK_NAME} | Direction: {condition} at Price: {price}")   
         if price >= highest_high:
             directionFlag = True
             condition = "BUY"
+            print(f"🎯 highest high candle closed  : {STOCK_NAME} | Direction: {condition} at Price: {price}")
         elif price <= lowest_low:
             directionFlag = True
             condition = "SELL"
+            print(f"🎯  lowest low candle closed: {STOCK_NAME} | Direction: {condition} at Price: {price}")
 
     # -----------------------------------------------------------------
     # STEP 4: Hardstop Strategy Expiration
     # -----------------------------------------------------------------
-    if now_ist >= time(10, 1):
-        print("⏰ Time limit reached (10:05 AM). Shutting down engine pipeline.")
+    if now_ist >= time(11, 59):
+        print("⏰ Time limit reached (11:59 AM). Shutting down engine pipeline.")
         exit(0)
     
     # -----------------------------------------------------------------
