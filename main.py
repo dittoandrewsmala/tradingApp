@@ -127,7 +127,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # Changed 'not diffFlag' to 'diffFlag' so this block actually runs after values are found
 
     if diffFlag and now_ist >= time(9, 35):
-        print("⏳ Waiting for anchor candles to form (9:34 AM - 10:00 AM)...")   
+        print("⏳ Waiting for anchor candles to form (9:35 AM - 10:00 AM)..." + str(highest_high) + ", " + str(lowest_low) + ", " + str(price))   
         if price >= highest_high:
             directionFlag = True
             condition = "BUY"
