@@ -65,7 +65,7 @@ while True:
     if now >= time(9, 15):
         print("Reached 9:15 AM")
         break
-    tm.sleep(1)
+    
 
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
