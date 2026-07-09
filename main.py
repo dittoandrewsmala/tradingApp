@@ -70,7 +70,7 @@ while True:
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     global counter, difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
-    trade.on_signal("BUY", price, 1, STOCK_NAME, 2, STOCK_TOKEN)  # Example call to on_signal for testing
+   
     # Track live price inside state structure 
     asset_state["last_price"] = price
     
