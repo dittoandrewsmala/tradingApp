@@ -70,7 +70,7 @@ while True:
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     global counter, difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
-    
+    trade.on_signal("BUY", price, 1, STOCK_NAME, 2)
     # Track live price inside state structure
     asset_state["last_price"] = price
     
@@ -82,7 +82,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # STEP 1: Process Target Anchor Bars when they Close
     # -----------------------------------------------------------------
     if time(9, 15) <= now_ist <= time(9, 34) and counter < 3:
-        print("⏳ Waiting for anchor candles to form (9:15 AM - 9:25 AM)...") 
+        print("⏳ Waiting for anchor candles to form (9:15 AM - 9:30 AM)...") 
         # Build raw history for fallback searching
         direction = "UP" if close_val >= open_val else "DOWN"
         candle_data = {

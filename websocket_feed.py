@@ -5,6 +5,8 @@ import config
 from logger import Logger
 from datetime import datetime, time
 import time as tm
+
+import pytz
 logger = Logger()
 
 class MarketFeed:
@@ -41,7 +43,8 @@ class MarketFeed:
         # ---- MARKET DATA ----
         elif "lp" in data:
             current_time = tm.time()
-            now = datetime.now().time()
+            IST = pytz.timezone('Asia/Kolkata')
+            now = datetime.now(IST).time()
             if now >= time(9, 35):
                 self.interval=5    
             # Check if 5 seconds have passed since the last callback trigger

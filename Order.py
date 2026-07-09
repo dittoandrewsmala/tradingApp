@@ -356,7 +356,7 @@ class Order:
     def place_entry(self, side, symbol, qty,price):
         
 
-        price = round(price + 0.3, 2) if side == "B" else round(price - 0.3, 2)
+        #price = round(price + 0.3, 2) if side == "B" else round(price - 0.3, 2)
 
         order = {
             "uid": config.USER_ID,
