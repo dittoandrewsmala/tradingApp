@@ -381,7 +381,7 @@ class Order:
 
         exit_side = "S"
         price = ltp
-        price = round(ltp - 0.5, 2)
+        price = round(ltp - 0.1, 2)
         order = {
             "uid": config.USER_ID,
             "actid": config.USER_ID,
