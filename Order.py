@@ -425,7 +425,7 @@ class Order:
             while True:
                 time.sleep(1)
                 ltp = self.get_ltp(symbol,stocktoken)
-                print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
+                print(f"LTP: {ltp} , ", end="")
                 if ltp is None:
                     continue
 
@@ -433,11 +433,12 @@ class Order:
 
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
+                    print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
                     stop_loss = max(stop_loss, ltp - 1)
                     target = ltp + dif
                 elif ltp < stop_loss:
                     print(f" STOP lOSS HIT LTP: {ltp}  SL: {stop_loss}")
-                    for attempt in range(25):
+                    for attempt in range(100):
                         exit_id = self.exit_entry(side, symbol, qty,stocktoken)
                         exit_price = self.wait_for_fill(exit_id)
                         if exit_price is not None:
@@ -447,7 +448,7 @@ class Order:
         except Exception as e:
             logger.printR(f"💥 Exception in trailing loop: {e}")
             # Emergency exit attempt
-            for attempt in range(10):
+            for attempt in range(100):
                 exit_id = self.exit_entry(side, symbol, qty,stocktoken)
                 exit_price = self.wait_for_fill(exit_id)
                 if exit_price is not None:
