@@ -3,7 +3,7 @@ import json
 import time
 import config
 from logger import Logger
-
+import time as tm
 
 logger = Logger()
 
@@ -87,7 +87,7 @@ class Order:
             if data and "lp" in data:
                 return float(data["lp"])
 
-            time.sleep(1)
+            tm.sleep(1)
 
         return None
 
@@ -124,14 +124,14 @@ class Order:
                 print(f"❌ Order {status}")
                 return None
 
-            time.sleep(1)
+            tm.sleep(1)
 
         # ⛔ TIMEOUT → CANCEL
         print(f"⏳ Timeout → Cancelling order {order_id}")
         self.cancel_order(order_id)
 
         # 🔁 Re-check after cancel (race condition)
-        time.sleep(1)
+        tm.sleep(1)
         status, price = self.get_order_status(order_id)
 
         if status == "COMPLETE":
@@ -283,13 +283,11 @@ class Order:
         for _ in range(100):
             jdata = {"uid": config.USER_ID, "exch": "NSE", "token": stocktoken}
             data = self.api(config.GET_QUOTES, jdata)
-            print(type(data))
-            data = json.loads(data.decode())
             print(f"Received data: {data}")  # Debugging line to see the response
             if data and "lp" in data:
                 return float(data["lp"])
 
-            time.sleep(1)
+            tm.sleep(1)
 
         return None
 
@@ -326,14 +324,14 @@ class Order:
                 print(f"❌ Order {status}")
                 return None
 
-            time.sleep(1)
+            tm.sleep(1)
 
         # ⛔ TIMEOUT → CANCEL
         print(f"⏳ Timeout → Cancelling order {order_id}")
         self.cancel_order(order_id)
 
         # 🔁 Re-check after cancel (race condition)
-        time.sleep(1)
+        tm.sleep(1)
         status, price = self.get_order_status(order_id)
 
         if status == "COMPLETE":
@@ -426,7 +424,7 @@ class Order:
 
         try:
             while True:
-                time.sleep(1)
+                tm.sleep(1)
                 print("ltp value")
                 ltp = self.get_ltp(symbol,stocktoken)
                 print(f"LTP: {ltp} , ", end="")
