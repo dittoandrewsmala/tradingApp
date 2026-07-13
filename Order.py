@@ -284,8 +284,12 @@ class Order:
             jdata = {"uid": config.USER_ID, "exch": "NSE", "token": stocktoken}
             data = self.api(config.GET_QUOTES, jdata)
             print(f"Received data: {data}")  # Debugging line to see the response
-            if data and "lp" in data:
-                return float(data["lp"])
+            if data:
+                if isinstance(data, str):
+                    data = json.loads(data) # Convert string to dictionary
+    
+                if "lp" in data:
+                    return float(data["lp"])
 
             tm.sleep(1)
 
