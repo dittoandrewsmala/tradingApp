@@ -283,6 +283,8 @@ class Order:
         for _ in range(100):
             jdata = {"uid": config.USER_ID, "exch": "NSE", "token": stocktoken}
             data = self.api(config.GET_QUOTES, jdata)
+            print(type(data))
+            data = json.loads(data.decode())
             print(f"Received data: {data}")  # Debugging line to see the response
             if data and "lp" in data:
                 return float(data["lp"])
