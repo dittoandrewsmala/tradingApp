@@ -280,7 +280,7 @@ class Order:
     def get_ltp(self, symbol,stocktoken):
 
         print(f"Fetching LTP for {symbol} with token {stocktoken}")
-        for _ in range(10):
+        for _ in range(5):
             jdata = {"uid": config.USER_ID, "exch": "NSE", "token": stocktoken}
             data = self.api(config.GET_QUOTES, jdata)
             print(f"Received data: {data}")  # Debugging line to see the response
