@@ -279,11 +279,11 @@ class Order:
     # ---------------- LTP ----------------
     def get_ltp(self, symbol,stocktoken):
 
-
-        for _ in range(5):
+        print(f"Fetching LTP for {symbol} with token {stocktoken}")
+        for _ in range(100):
             jdata = {"uid": config.USER_ID, "exch": "NSE", "token": stocktoken}
             data = self.api(config.GET_QUOTES, jdata)
-
+            print(f"Received data: {data}")  # Debugging line to see the response
             if data and "lp" in data:
                 return float(data["lp"])
 
@@ -412,6 +412,7 @@ class Order:
             return None, None
 
         entry_price = self.wait_for_fill(entry_id)
+        print(f"💰 Entry price: {entry_price}")
         if not entry_price:
             return None, None
 
@@ -424,6 +425,7 @@ class Order:
         try:
             while True:
                 time.sleep(1)
+                print("ltp value")
                 ltp = self.get_ltp(symbol,stocktoken)
                 print(f"LTP: {ltp} , ", end="")
                 if ltp is None:
