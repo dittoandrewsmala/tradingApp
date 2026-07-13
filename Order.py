@@ -280,22 +280,22 @@ class Order:
     def get_ltp(self, symbol,stocktoken):
 
         print(f"Fetching LTP for {symbol} with token {stocktoken}")
+        ltp=None
         for _ in range(5):
             jdata = {"uid": config.USER_ID, "exch": "NSE", "token": stocktoken}
             data = self.api(config.GET_QUOTES, jdata)
-            print(f"Received data: {data}")  # Debugging line to see the response
             if data:
                 if isinstance(data, str):
                     print(f"Data is a string, attempting to parse JSON: {data}")
                     data = json.loads(data) # Convert string to dictionary
-                print(f"Parsed data: {data}")  # Debugging line to see the parsed data
-                print(data and "token" in data and "lp" in data)
                 if data and "token" in data and "lp" in data:
-                    return float(data["lp"])
+                    ltp=float(data["lp"])
+                    print(f"LTP for {symbol}: {ltp}")
+                    break
 
             tm.sleep(1)
 
-        return None
+        return ltp
 
     # ---------------- ORDER STATUS ----------------
     def get_order_status(self, order_id):
