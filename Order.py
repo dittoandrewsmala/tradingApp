@@ -279,18 +279,15 @@ class Order:
     # ---------------- LTP ----------------
     def get_ltp(self, symbol,stocktoken):
 
-        print(f"Fetching LTP for {symbol} with token {stocktoken}")
         ltp=None
         for _ in range(5):
             jdata = {"uid": config.USER_ID, "exch": "NSE", "token": stocktoken}
             data = self.api(config.GET_QUOTES, jdata)
             if data:
                 if isinstance(data, str):
-                    print(f"Data is a string, attempting to parse JSON: {data}")
                     data = json.loads(data) # Convert string to dictionary
                 if data and "token" in data and "lp" in data:
                     ltp=float(data["lp"])
-                    print(f"LTP for {symbol}: {ltp}")
                     break
 
             tm.sleep(1)
@@ -433,7 +430,7 @@ class Order:
                 tm.sleep(1)
                 print("ltp value")
                 ltp = self.get_ltp(symbol,stocktoken)
-                print(f"LTP: {ltp} , ", end="")
+                print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
                 if ltp is None:
                     continue
 
@@ -441,7 +438,6 @@ class Order:
 
                 # Trailing Stop Loss Mechanism
                 if ltp >= target:
-                    print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
                     stop_loss = max(stop_loss, ltp - 1)
                     target = ltp + dif
                 elif ltp < stop_loss:
