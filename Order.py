@@ -388,7 +388,7 @@ class Order:
         order = {
             "uid": config.USER_ID,
             "actid": config.USER_ID,
-            "exch": "NFO",
+            "exch": "NSE",
             "tsym": symbol,
             "qty": str(qty),
             "prd": "I",
@@ -428,7 +428,6 @@ class Order:
         try:
             while True:
                 tm.sleep(1)
-                print("ltp value")
                 ltp = self.get_ltp(symbol,stocktoken)
                 print(f"LTP: {ltp} | Trg Threshold: {target} | SL: {stop_loss}")
                 if ltp is None:
