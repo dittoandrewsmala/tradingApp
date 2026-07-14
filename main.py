@@ -69,7 +69,7 @@ while True:
 
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
-    global counter, difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
+    global  difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
     
     # Track live price inside state structure 
     asset_state["last_price"] = price
@@ -81,45 +81,41 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # STEP 1: Process Target Anchor Bars when they Close
     # -----------------------------------------------------------------
-    if time(9, 15) <= now_ist <= time(9, 34) and counter < 3:
+    if time(9, 15) <= now_ist <= time(9, 30) :
         print("⏳ Waiting for anchor candles to form (9:15 AM - 9:30 AM)...") 
         # Build raw history for fallback searching
-        direction = "UP" if close_val >= open_val else "DOWN"
-        candle_data = {
-                "open": open_val, "low": low_val, 
-                "high": high_val, "close": close_val, "direction": direction
-        }
-        asset_state["anchors"][counter].update(candle_data)
-        counter += 1     
+        # Initialize values on the very first candle
+        if highest_high is None or lowest_low is None:
+            highest_high = high_val
+            lowest_low = low_val
+        else:
+            # Dynamically update the absolute highest high and lowest low
+            highest_high = max(highest_high, high_val)
+            lowest_low = min(lowest_low, low_val)
+            
+        print(f"📈 Current Bounds -> Highest High: {highest_high} | Lowest Low: {lowest_low}")     
             
 
 
     # -----------------------------------------------------------------
     # STEP 2: Value Range Setup (9:27 AM - 9:30 AM)
     # -----------------------------------------------------------------
-    if counter==3 and not diffFlag and now_ist >= time(9, 35):
+    if now_ist >= time(9, 31) and not diffFlag:
         print("⏳ Waiting for anchor candles to form (9:31 AM - 9:33 AM)...")   
-        a15 = asset_state["anchors"][0]
-        a20 = asset_state["anchors"][1]
-        a25 = asset_state["anchors"][2]
         
-        if (a15 and a20 and a25 and 
-            None not in (a15["high"], a20["high"], a25["high"], a15["low"], a20["low"], a25["low"])):
-
-            highest_high = max(a15["high"], a20["high"], a25["high"])
-            lowest_low = min(a15["low"], a20["low"], a25["low"])
-            difference = highest_high - lowest_low
+        
+        difference = highest_high - lowest_low
             
-            # Calculated as a ratio of the absolute trading range relative to the price
-            percentage = (difference / price) * 100
-            diffFlag = True  
+        # Calculated as a ratio of the absolute trading range relative to the price
+        percentage = (difference / price) * 100
+        diffFlag = True  
             
-            print(f"✅ Range Formed -> High: {highest_high} | Low: {lowest_low} | Diff: {difference}")
-            print(f"📊 Range Percentage Size: {percentage:.3f}%")
+        print(f"✅ Range Formed -> High: {highest_high} | Low: {lowest_low} | Diff: {difference}")
+        print(f"📊 Range Percentage Size: {percentage:.3f}%")
             
-            if percentage >= 0.75:
-                print("⚠️ Volatility range is too wide (>= 0.75%). Exiting strategy context for safety.")
-                exit(0)
+        if percentage >= 0.75:
+            print("⚠️ Volatility range is too wide (>= 0.75%). Exiting strategy context for safety.")
+            exit(0)
 
     # -----------------------------------------------------------------
     # STEP 3: Breakout Detection (9:31 AM - 10:00 AM)

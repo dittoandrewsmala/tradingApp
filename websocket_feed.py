@@ -18,7 +18,7 @@ class MarketFeed:
         self.ws = None
         # --- ADDED: Track the last time data was forwarded ---
         self.last_processed_time = 0  
-        self.interval = 300  # Interval in seconds
+        self.interval = 5  # Interval in seconds
 
     # ---------- MESSAGE ----------
     def on_message(self, ws, msg):
@@ -44,9 +44,7 @@ class MarketFeed:
         elif "lp" in data:
             current_time = tm.time()
             IST = pytz.timezone('Asia/Kolkata')
-            now = datetime.now(IST).time()
-            if now >= time(9, 35):
-                self.interval=5    
+            now = datetime.now(IST).time()  
             # Check if 5 seconds have passed since the last callback trigger
             if current_time - self.last_processed_time >= self.interval:
                 ltp = float(data["lp"])
