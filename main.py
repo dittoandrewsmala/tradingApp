@@ -71,10 +71,6 @@ while True:
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     global  difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
     
-    # Track live price inside state structure 
-    asset_state["last_price"] = price
-    
-    candle = asset_state["builder"].update(price, volume, open_val, low_val, high_val, close_val)
     now_ist = datetime.now(IST).time()
     print("⏳ time:", now_ist, "Price:", price, "Volume:", volume, "Open:", open_val, "Low:", low_val, "High:", high_val, "Close:", close_val)
     
@@ -82,7 +78,6 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # STEP 1: Process Target Anchor Bars when they Close
     # -----------------------------------------------------------------
     if time(9, 15) <= now_ist <= time(9, 30) :
-        print("⏳ Waiting for anchor candles to form (9:15 AM - 9:30 AM)...") 
         # Build raw history for fallback searching
         # Initialize values on the very first candle
         if highest_high is None or lowest_low is None:
@@ -91,8 +86,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
         else:
             # Dynamically update the absolute highest high and lowest low
             highest_high = max(highest_high, high_val)
-            lowest_low = min(lowest_low, low_val)
-            
+            lowest_low = min(lowest_low, low_val)  
         print(f"📈 Current Bounds -> Highest High: {highest_high} | Lowest Low: {lowest_low}")     
             
 
@@ -102,17 +96,12 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     if now_ist >= time(9, 31) and not diffFlag:
         print("⏳ Waiting for anchor candles to form (9:31 AM - 9:33 AM)...")   
-        
-        
-        difference = highest_high - lowest_low
-            
+        difference = highest_high - lowest_low 
         # Calculated as a ratio of the absolute trading range relative to the price
         percentage = (difference / price) * 100
-        diffFlag = True  
-            
+        diffFlag = True    
         print(f"✅ Range Formed -> High: {highest_high} | Low: {lowest_low} | Diff: {difference}")
-        print(f"📊 Range Percentage Size: {percentage:.3f}%")
-            
+        print(f"📊 Range Percentage Size: {percentage:.3f}%")   
         if percentage >= 0.75:
             print("⚠️ Volatility range is too wide (>= 0.75%). Exiting strategy context for safety.")
             exit(0)
@@ -121,7 +110,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # STEP 3: Breakout Detection (9:31 AM - 10:00 AM)
     # -----------------------------------------------------------------
     # Changed 'not diffFlag' to 'diffFlag' so this block actually runs after values are found
-    if diffFlag and now_ist >= time(9, 35):
+    if diffFlag and now_ist >= time(9, 32):
         print(f"🎯 Breakout Confirmed: {STOCK_NAME} | Direction: {condition} at Price: {price}")   
         if price >= highest_high:
             directionFlag = True
