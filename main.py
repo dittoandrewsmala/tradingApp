@@ -53,7 +53,7 @@ while True:
     if now >= time(9, 31):
         print("Reached 9:31 AM")
         break
-    
+    tm.sleep(1)
 
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
@@ -108,9 +108,6 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     if directionFlag  and condition is not None:
         print("⏳ directionFlag is True and no active trade. Preparing to execute order...")   
         directionFlag = False  # Reset flag immediately to block micro-tick spam loops
-        asset_state["trade_triggered"] = True
-        
-        print(f"🎯 Breakout Confirmed: {STOCK_NAME} | Direction: {condition} at Price: {price}")
         
         try:
             trade.session_token = broker.session
@@ -119,7 +116,6 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
             exit(0)
         except Exception as e:
             print(f"❌ Order execution failure: {e}")
-            asset_state["trade_triggered"] = False  # Fallback to retry if order failed structurally
         finally:
             ord_numer = None
 
