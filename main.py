@@ -39,6 +39,7 @@ lowest_low = None
 difference = None
 condition = None 
 counter =0
+breakoutValue=.92
 IST = pytz.timezone('Asia/Kolkata')
 if not signalStarted:
     logger.printD(f"🚀 Starting Advanced Anchor OHL Strategy for: {STOCK_NAME}")
@@ -46,6 +47,9 @@ if not signalStarted:
     choice = input("Do you want to give index value yes or no ? ").strip()
     if choice.lower() == "yes":
         lotIndex = int(input("Enter share size: ").strip())
+    choice = input("Do you want to give Volatility range yes or no ? ").strip()
+    if choice.lower() == "yes":
+        breakoutValue = float(input("Enter breakout value: ").strip())
 
 while True:
     now = datetime.now(IST).time()
@@ -57,7 +61,7 @@ while True:
 
 
 def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
-    global  difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer
+    global  difference, diffFlag, highest_high, lowest_low, directionFlag, condition, ord_numer,breakoutValue
     
     now_ist = datetime.now(IST).time()
     print("⏳ time:", now_ist, "Price:", price, "Volume:", volume, "Open:", open_val, "Low:", low_val, "High:", high_val, "Close:", close_val)
@@ -76,8 +80,8 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
         diffFlag = True    
         print(f"✅ Range Formed -> High: {highest_high} | Low: {lowest_low} | Diff: {difference}")
         print(f"📊 Range Percentage Size: {percentage:.3f}%")   
-        if percentage >= 0.75:
-            print("⚠️ Volatility range is too wide (>= 0.75%). Exiting strategy context for safety.")
+        if percentage >= breakoutValue:
+            print(f"⚠️ Volatility range is too wide (>= {breakoutValue:.2f}%). Exiting strategy context for safety.")
             exit(0)
 
     # -----------------------------------------------------------------
