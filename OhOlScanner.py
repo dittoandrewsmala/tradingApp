@@ -91,7 +91,7 @@ if __name__ == "__main__":
     NIFTY_TOKEN = "3426"  # Input token parameter
 
     # Initialize the scanner class object
-    scanner = FlattradeScanner(uid=USER_ID, session_token=SESSION_TOKEN)
+    scanner = OhOlScanner(uid=USER_ID, session_token=SESSION_TOKEN)
 
     # Call the method passing the desired token
     hi_candle, lo_candle = scanner.get_highest_lowest_candles(token=NIFTY_TOKEN)
