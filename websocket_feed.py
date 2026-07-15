@@ -18,7 +18,7 @@ class MarketFeed:
         self.ws = None
         # --- ADDED: Track the last time data was forwarded ---
         self.last_processed_time = 0  
-        self.interval = 1  # Interval in seconds
+        self.interval = 5  # Interval in seconds
 
     # ---------- MESSAGE ----------
     def on_message(self, ws, msg):
