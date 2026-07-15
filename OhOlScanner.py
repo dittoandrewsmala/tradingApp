@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import json
 import requests
+import traceback
 
 
 class OhOlScanner:
@@ -74,9 +75,11 @@ class OhOlScanner:
 
         except requests.exceptions.RequestException as req_err:
             print(f"HTTP Request failed: {req_err}")
+            traceback.print_exc()
             return None, None
         except Exception as e:
             print(f"An unexpected error occurred parsing the candles: {e}")
+            traceback.print_exc()
             return None, None
 
 
