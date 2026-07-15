@@ -18,9 +18,36 @@ broker.setLogin()
 OhOlScanner=OhOlScanner(config.USER_ID, config.SMART_TOKEN)
 
 # --- Single Stock Configuration (Tata Power) ---
-STOCK_NAME = 'TATAPOWER-EQ'
-STOCK_TOKEN = '3426'  # Standard NSE token for Tata Power
+STOCK_NAME = None
+STOCK_TOKEN = None
 
+WATCHLIST = [
+    {"index": 0, "nse_symbol": "TATAPOWER-EQ", "token": "3426"},
+    {"index": 1, "nse_symbol": "RELIANCE-EQ", "token": "2885"},
+    {"index": 2, "nse_symbol": "HDFCBANK-EQ", "token": "1333"},
+    {"index": 3, "nse_symbol": "ICICIBANK-EQ", "token": "4963"},
+    {"index": 4, "nse_symbol": "SBIN-EQ", "token": "3045"},
+    {"index": 5, "nse_symbol": "TATAMOTORS-EQ", "token": "3456"},
+    {"index": 6, "nse_symbol": "BHARTIARTL-EQ", "token": "10604"},
+    {"index": 7, "nse_symbol": "INFY-EQ", "token": "1594"},
+    {"index": 8, "nse_symbol": "TCS-EQ", "token": "11536"},
+    {"index": 9, "nse_symbol": "AXISBANK-EQ", "token": "5900"},
+    {"index": 10, "nse_symbol": "ADANIPORTS-EQ", "token": "15083"}
+]
+# Define column widths for alignment
+idx_w, sym_w, tok_w = 8, 18, 10
+
+# Print Table Header
+print(f"{'Index':<{idx_w}} | {'NSE Symbol':<{sym_w}} | {'Token':<{tok_w}}")
+print("-" * (idx_w + sym_w + tok_w + 6))
+
+# Print Table Rows
+for stock in WATCHLIST:
+    print(f"{stock['index']:<{idx_w}} | {stock['nse_symbol']:<{sym_w}} | {stock['token']:<{tok_w}}")
+
+stockIndex = int(input("Enter stock index: ").strip())
+STOCK_NAME = WATCHLIST[stockIndex]['nse_symbol']
+STOCK_TOKEN = WATCHLIST[stockIndex]['token']
 
 # Global Strategy Management Variables
 risk = RiskManager()
@@ -44,10 +71,10 @@ IST = pytz.timezone('Asia/Kolkata')
 if not signalStarted:
     logger.printD(f"🚀 Starting Advanced Anchor OHL Strategy for: {STOCK_NAME}")
     signalStarted = True
-    choice = input("Do you want to give index value yes or no ? ").strip()
+    choice = input("Do you want to give number of shares to buy default 1 yes or no ? ").strip()
     if choice.lower() == "yes":
-        lotIndex = int(input("Enter share size: ").strip())
-    choice = input("Do you want to give Volatility range yes or no ? ").strip()
+        lotIndex = int(input("Enter share number: ").strip())
+    choice = input(f"Do you want to give Volatility range default {{{breakoutValue:.2f}}} yes or no ? ").strip()
     if choice.lower() == "yes":
         breakoutValue = float(input("Enter breakout value: ").strip())
 
