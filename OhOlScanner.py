@@ -35,7 +35,7 @@ class OhOlScanner:
             "intrv": "5",
         }
         payload = f"jData={json.dumps(jdata)}&jKey={self.session_token}"
-
+        print(f"Sending request with payload: {payload}")
         try:
             # 3. Execute the POST request
             response = requests.post(
