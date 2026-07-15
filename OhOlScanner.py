@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
 import json
+from tracemalloc import start
+from dateutil.utils import today
 import requests
 import traceback
 import pytz
+from zoneinfo import ZoneInfo
 
 class OhOlScanner:
 
@@ -18,11 +21,11 @@ class OhOlScanner:
         and returns the highest high and lowest low candles.
         """
         IST = pytz.timezone('Asia/Kolkata')
-        today = datetime.now(IST)
+        today = datetime.now(ZoneInfo("Asia/Kolkata"))
 
         # 1. Define time ranges for the current day's market window
-        start = datetime(today.year, today.month, today.day, 9, 15, 0)
-        end = datetime(today.year, today.month, today.day, 9, 30, 0)
+        start = today.replace(hour=9, minute=15, second=0, microsecond=0)
+        end = today.replace(hour=9, minute=30, second=0, microsecond=0)
 
         st = int(start.timestamp())
         et = int(end.timestamp())
