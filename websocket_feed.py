@@ -94,7 +94,7 @@ class MarketFeed:
     def on_close(self, ws, code, msg):
         logger.printD("🔴 Connection Closed")
         logger.printD(f"♻ Reconnecting in {config.timeInterval} sec...")
-        time.sleep(config.timeInterval)
+        tm.sleep(config.timeInterval)
         self.start()
 
     # ---------- START ----------
