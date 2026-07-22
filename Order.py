@@ -420,7 +420,7 @@ class Order:
             return None, None
 
         
-        target = entry_price + dif
+        target = entry_price + 1.3
         stop_loss = entry_price - dif
         exit_price = None
         profitOrLoss = "LOSS"
