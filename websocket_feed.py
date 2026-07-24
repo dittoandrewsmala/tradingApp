@@ -11,11 +11,12 @@ logger = Logger()
 
 class MarketFeed:
 
-    def __init__(self, session_token, symbol_token, callback):
+    def __init__(self, session_token, symbol_token, callback,exchange):
         self.session_token = session_token
         self.symbol_token = symbol_token
         self.callback = callback
         self.ws = None
+        self.exchange = exchange
         # --- ADDED: Track the last time data was forwarded ---
         self.last_processed_time = 0  
         self.interval = 5  # Interval in seconds
@@ -68,7 +69,7 @@ class MarketFeed:
     def subscribe(self):
         payload = {
             "t": "t",
-            "k": f"{config.EXCHANGE_NSE}|{self.symbol_token}"
+            "k": f"{self.exchange}|{self.symbol_token}"
         }
         logger.printD("📡 Subscribing:" + json.dumps(payload))
         self.ws.send(json.dumps(payload))
@@ -88,12 +89,13 @@ class MarketFeed:
 
     # ---------- ERROR ----------
     def on_error(self, ws, error):
-        logger.printR("❌ WebSocket Error:" + str(error))
+        print("❌ WebSocket Error:" + str(error))
 
     # ---------- CLOSE ----------
     def on_close(self, ws, code, msg):
-        logger.printD("🔴 Connection Closed")
-        logger.printD(f"♻ Reconnecting in {config.timeInterval} sec...")
+        print(code, msg)
+        logger.printR("🔴 Connection Closed")
+        logger.printR(f"♻ Reconnecting in {config.timeInterval} sec...")
         tm.sleep(config.timeInterval)
         self.start()
 

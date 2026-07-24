@@ -110,7 +110,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
         if percentage >= breakoutValue:
             print(f"⚠️ Volatility range is too wide (>= {breakoutValue:.2f}%). Exiting strategy context for safety.")
             exit(0)
-
+        
     # -----------------------------------------------------------------
     # STEP 2: Breakout Detection (9:31 AM - 10:00 AM)
     # -----------------------------------------------------------------
@@ -155,6 +155,7 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
 feed = MarketFeed(
     session_token=broker.session,
     symbol_token=STOCK_TOKEN,  
-    callback=on_tick_multi_asset
+    callback=on_tick_multi_asset,
+    exchange=config.EXCHANGE_NSE
 )
 feed.start()
