@@ -1,29 +1,26 @@
 import websocket
 import json
-import time
+import time as tm
+from datetime import datetime
+import pytz
 import config
 from logger import Logger
-from datetime import datetime, time
-import time as tm
 
-import pytz
 logger = Logger()
 
 class MarketFeed:
 
-    def __init__(self, session_token, symbol_token, callback,exchange):
+    def __init__(self, session_token, symbol_token, callback, exchange):
         self.session_token = session_token
         self.symbol_token = symbol_token
         self.callback = callback
         self.ws = None
         self.exchange = exchange
-        # --- ADDED: Track the last time data was forwarded ---
         self.last_processed_time = 0  
-        self.interval = 5  # Interval in seconds
+        self.interval = 5  # Callback interval in seconds
 
     # ---------- MESSAGE ----------
     def on_message(self, ws, msg):
-        # Optional: You can comment this out if it floods your log file/console
         logger.printD("📩 RAW:" + msg)
 
         try:
@@ -44,9 +41,6 @@ class MarketFeed:
         # ---- MARKET DATA ----
         elif "lp" in data:
             current_time = tm.time()
-            IST = pytz.timezone('Asia/Kolkata')
-            now = datetime.now(IST).time()  
-            # Check if 5 seconds have passed since the last callback trigger
             if current_time - self.last_processed_time >= self.interval:
                 ltp = float(data["lp"])
                 volume = float(data.get("v", 0))
@@ -58,12 +52,11 @@ class MarketFeed:
                 if self.callback:
                     self.callback(ltp, volume, open_price, low, high, close)
                 
-                # Update the timestamp checkpoint
                 self.last_processed_time = current_time
 
-        # ---- HEARTBEAT ----
+        # ---- HEARTBEAT ACK FROM SERVER ----
         elif msg_type == "h":
-            logger.printD("💓 Heartbeat")
+            logger.printD("💓 Server Heartbeat Ack")
 
     # ---------- SUBSCRIBE ----------
     def subscribe(self):
@@ -89,23 +82,31 @@ class MarketFeed:
 
     # ---------- ERROR ----------
     def on_error(self, ws, error):
-        print("❌ WebSocket Error:" + str(error))
+        logger.printR("❌ WebSocket Error: " + str(error))
 
     # ---------- CLOSE ----------
     def on_close(self, ws, code, msg):
-        print(code, msg)
-        logger.printR("🔴 Connection Closed")
-        logger.printR(f"♻ Reconnecting in {config.timeInterval} sec...")
-        tm.sleep(config.timeInterval)
-        self.start()
+        logger.printR(f"🔴 Connection Closed. Code: {code}, Message: {msg}")
 
     # ---------- START ----------
     def start(self):
-        self.ws = websocket.WebSocketApp(
-            "wss://piconnect.flattrade.in/PiConnectWSAPI/",
-            on_message=self.on_message,
-            on_open=self.on_open,
-            on_error=self.on_error,
-            on_close=self.on_close
-        )
-        self.ws.run_forever()
+        # Outer loop ensures clean reconnection without recursion
+        while True:
+            try:
+                self.ws = websocket.WebSocketApp(
+                    "wss://piconnect.flattrade.in/PiConnectWSAPI/",
+                    on_message=self.on_message,
+                    on_open=self.on_open,
+                    on_error=self.on_error,
+                    on_close=self.on_close
+                )
+                
+                # ping_interval=30 sends an automatic ping every 30s to keep connection alive
+                # ping_timeout=10 waits 10s for pong response before timing out
+                self.ws.run_forever(ping_interval=30, ping_timeout=10)
+                
+            except Exception as e:
+                logger.printR(f"⚠️ Exception in WebSocket: {str(e)}")
+
+            logger.printR(f"♻ Reconnecting in {config.timeInterval} sec...")
+            tm.sleep(config.timeInterval)
