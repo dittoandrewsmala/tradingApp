@@ -1,6 +1,7 @@
 # ===== USER SETTINGS =====
 
 API_KEY = "b86624198f744b6d96eb9901c4883be0"
+
 API_SECRET = "2026.f9556d48fde44afea5f91a6563cfa1fad5d4c0e2ed2d8be1"
 REDIRECT_URL = "http://127.0.0.1:8080/callback?"   # Only for reference
 
@@ -59,6 +60,8 @@ TARGET = 10        # Target profit points
 TRAIL = 3         # Trailing stop points
 
 EXPIRY="21APR26"
+SMART_TOKEN="c6d9e2fe3901f1ee2c4fef8fcf99a01e71485f1d300c1403041fd63d65bd72af"
+
 
 
 
