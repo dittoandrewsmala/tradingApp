@@ -129,8 +129,8 @@ def on_tick_multi_asset(price, volume, open_val, low_val, high_val, close_val):
     # -----------------------------------------------------------------
     # STEP 3: Hardstop Strategy Expiration
     # -----------------------------------------------------------------
-    if now_ist >= time(10, 30):
-        print("⏰ Time limit reached (10:30 AM). Shutting down engine pipeline.")
+    if now_ist >= time(11, 30):
+        print("⏰ Time limit reached (11:30 AM). Shutting down engine pipeline.")
         exit(0)
     
     # -----------------------------------------------------------------
